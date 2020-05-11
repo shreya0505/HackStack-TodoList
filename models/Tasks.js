@@ -2,6 +2,10 @@ var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 
 var taskSchema = new Schema({
+  owner: {
+    type: Schema.Types.ObjectId,
+    ref: "users",
+  },
   taskName: {
     type: String,
     required: true,
@@ -9,6 +13,7 @@ var taskSchema = new Schema({
 
   description: {
     type: String,
+    default: "",
   },
   status: {
     type: Boolean,
@@ -20,11 +25,6 @@ var taskSchema = new Schema({
     default: 0,
   },
 
-  reminders: {
-    type: [Schema.Types.ObjectId],
-    ref: "reminders",
-  },
-
   schedule: {
     type: Schema.Types.ObjectId,
     ref: "schedule",
@@ -33,6 +33,9 @@ var taskSchema = new Schema({
   dateCreated: {
     type: Date,
     default: Date.now(),
+  },
+  duedate: {
+    type: Date,
   },
 });
 

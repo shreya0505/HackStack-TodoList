@@ -2,6 +2,11 @@ var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 
 var checkListSchema = new Schema({
+  owner: {
+    type: Schema.Types.ObjectId,
+    ref: "users",
+  },
+  
   listName: {
     type: String,
     required: true,
@@ -9,6 +14,7 @@ var checkListSchema = new Schema({
 
   description: {
     type: String,
+    default: "",
   },
 
   status: {
@@ -21,10 +27,18 @@ var checkListSchema = new Schema({
     default: 0,
   },
 
-  listItems: {
-    type: [String],
-    required: true,
-  },
+  listItems: [
+    {
+      item: {
+        type: String,
+        required: true,
+      },
+      status: {
+        type: Boolean,
+        default: false,
+      },
+    },
+  ],
 
   dueDate: {
     type: Date,

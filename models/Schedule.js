@@ -2,32 +2,27 @@ var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 
 var scheduleSchema = new Schema({
+  owner: {
+    type: Schema.Types.ObjectId,
+    ref: "users",
+  },
   repeat: {
     type: Boolean,
     default: false,
   },
 
-  days: {
-    type: [String],
-  },
-
-  dueDate: {
-    type: Date,
-  },
-  remind: {
+  daily: {
     type: Boolean,
     default: false,
   },
+
   days: {
     type: [String],
+    default: [],
   },
-  date: {
+
+  duedate: {
     type: Date,
-  },
-  remindMessage: {
-    type: Boolean,
-    default: "You have a HackStack todolist task reminder",
-    required: true,
   },
 });
 

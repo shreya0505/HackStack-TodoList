@@ -2,12 +2,21 @@ var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 
 var snSchema = new Schema({
-  remind: {
-    type: Boolean,
-    default: false,
+  owner: {
+    type: Schema.Types.ObjectId,
+    ref: "users",
+  },
+  title: {
+    type: String,
+    required: true,
   },
   message: {
     type: String,
+    required: true,
+  },
+  status: {
+    type: Boolean,
+    default: false,
   },
 });
 

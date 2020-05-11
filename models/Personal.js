@@ -2,14 +2,22 @@ var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 
 var personalSchema = new Schema({
-  user: {
+  owner: {
     type: Schema.Types.ObjectId,
     ref: "users",
   },
 
-  tile: {
+  title: {
     type: String,
     required: true,
+  },
+  description: {
+    type: String,
+    default: "",
+  },
+  color: {
+    type: String,
+    default: "white",
   },
 
   pinned: {
@@ -22,6 +30,11 @@ var personalSchema = new Schema({
     default: false,
   },
 
+  status: {
+    type: String,
+    default: "Ongoing",
+  },
+
   task: {
     type: [Schema.Types.ObjectId],
     ref: "tasks",
@@ -31,6 +44,10 @@ var personalSchema = new Schema({
     type: [Schema.Types.ObjectId],
     ref: "checklists",
   },
+  label: {
+    type: String,
+    default:""
+  },
 
   notes: {
     type: [Schema.Types.ObjectId],
@@ -39,6 +56,7 @@ var personalSchema = new Schema({
 
   duedate: {
     type: Date,
+    default:"",
   },
 
   dateCreated: {
