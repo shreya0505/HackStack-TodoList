@@ -1,36 +1,45 @@
 var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 
-var userSchema = new Schema({
-
+var personalSchema = new Schema({
   user: {
     type: Schema.Types.ObjectId,
     ref: "users",
-    },
-    
-    tile: {
-        type: String,
-        required:true
-    },
+  },
 
-    pin: {
-        type: Boolean,
-        default:false
-    },
+  tile: {
+    type: String,
+    required: true,
+  },
 
-    task: {
-        type: [Schema.Types.ObjectId],
-        ref: 'tasks'
-    },
+  pinned: {
+    type: Boolean,
+    default: false,
+  },
 
-    checklist: {
-        type: [Schema.Types.ObjectId],
-        ref: 'checklists'
-    },
+  archived: {
+    type: Boolean,
+    default: false,
+  },
 
-    duedate: {
-        type: Date,
-    },
+  task: {
+    type: [Schema.Types.ObjectId],
+    ref: "tasks",
+  },
+
+  checklist: {
+    type: [Schema.Types.ObjectId],
+    ref: "checklists",
+  },
+
+  notes: {
+    type: [Schema.Types.ObjectId],
+    ref: "stickyNotes",
+  },
+
+  duedate: {
+    type: Date,
+  },
 
   dateCreated: {
     type: Date,
@@ -39,4 +48,4 @@ var userSchema = new Schema({
 });
 
 //model takes argument modelname and schema
-module.exports = User = mongoose.model("users", userSchema);
+module.exports = Personal = mongoose.model("personal", personalSchema);

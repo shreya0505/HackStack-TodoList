@@ -1,48 +1,81 @@
 var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 
-var userSchema = new Schema({
-  email: {
-    type: String,
-    required: true,
-    unique: true,
+var personalSchema = new Schema({
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: "users",
   },
 
-  username: {
+  tile: {
     type: String,
     required: true,
-    unique: true,
   },
 
-  password: {
-    type: String,
-    required: true,
-  },
-  otp: {
-    type: String,
-    required: true,
-  },
-  isVerified: {
+  pinned: {
     type: Boolean,
     default: false,
-    required: true,
   },
 
-  personal: {
+  archived: {
+    type: Boolean,
+    default: false,
+  },
+
+  task: {
     type: [Schema.Types.ObjectId],
-    ref: "personal",
+    ref: "tasks",
   },
 
-  team: {
+  checklist: {
     type: [Schema.Types.ObjectId],
-    ref: "team",
+    ref: "checklists",
   },
 
-  date: {
+  notes: {
+    type: [Schema.Types.ObjectId],
+    ref: "stickyNotes",
+  },
+
+  creators: [
+    {
+      object: {
+        type: [Schema.Types.ObjectId],
+        ref: "tasks",
+      },
+      owner: {
+        type: [Schema.Types.ObjectId],
+        ref: "users",
+      },
+    },
+  ],
+
+  chat: [
+    {
+      sender: {
+        type: [Schema.Types.ObjectId],
+        ref: "users",
+      },
+      tag: {
+        type: [Schema.Types.ObjectId],
+        ref: "users",
+      },
+      text: {
+        type: String,
+        required: true,
+      },
+    },
+  ],
+
+  duedate: {
+    type: Date,
+  },
+
+  dateCreated: {
     type: Date,
     default: Date.now(),
   },
 });
 
 //model takes argument modelname and schema
-module.exports = User = mongoose.model("users", userSchema);
+module.exports = Personal = mongoose.model("personal", personalSchema);
