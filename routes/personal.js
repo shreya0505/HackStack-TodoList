@@ -10,6 +10,7 @@ const Tasks = require("../models/Tasks");
 const Personal = require("../models/Personal");
 
 // C R U D
+
 //CREATE==================================================================================
 router.post(
   "/",
@@ -225,6 +226,7 @@ router.post(
     }
   }
 );
+
 //READ==================================================================================
 
 router.get("/project/:id", auth, async (req, res) => {
@@ -232,7 +234,10 @@ router.get("/project/:id", auth, async (req, res) => {
     return res.status(400).json({ error: [{ msg: "Page not found" }] });
   }
   try {
-    const personal = await Personal.findById(req.params.id);
+    const personal = await Personal.findById(req.params.id)
+      .populate("task")
+      .populate("checklist")
+      .populate("notes");
     if (!personal) {
       return res
         .status(400)

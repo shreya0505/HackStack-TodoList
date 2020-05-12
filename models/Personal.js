@@ -40,24 +40,30 @@ var personalSchema = new Schema({
     default: false,
   },
 
-  task: {
-    type: [Schema.Types.ObjectId],
-    ref: "tasks",
-  },
+  task: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "tasks",
+    },
+  ],
 
-  checklist: {
-    type: [Schema.Types.ObjectId],
-    ref: "checklists",
-  },
+  checklist: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "checkLists",
+    },
+  ],
   label: {
     type: String,
     default: "",
   },
 
-  notes: {
-    type: [Schema.Types.ObjectId],
-    ref: "stickyNotes",
-  },
+  notes: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "stickyNotes",
+    },
+  ],
 
   duedate: {
     type: Date,

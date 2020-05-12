@@ -12,10 +12,12 @@ var teamSchema = new Schema({
     required: true,
   },
 
-  teamMembers: {
-    type: [Schema.Types.ObjectId],
-    ref: "users",
-  },
+  teamMembers: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "users",
+    },
+  ],
 
   teamName: {
     type: String,
@@ -36,20 +38,26 @@ var teamSchema = new Schema({
     default: "Ongoing",
   },
 
-  task: {
-    type: [Schema.Types.ObjectId],
-    ref: "tasks",
-  },
+  task: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "tasks",
+    },
+  ],
 
-  checklist: {
-    type: [Schema.Types.ObjectId],
-    ref: "checklists",
-  },
+  checklist: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "checkLists",
+    },
+  ],
 
-  notes: {
-    type: [Schema.Types.ObjectId],
-    ref: "stickyNotes",
-  },
+  notes: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "stickyNotes",
+    },
+  ],
   completed: {
     type: Boolean,
     default: false,
@@ -68,6 +76,10 @@ var teamSchema = new Schema({
       text: {
         type: String,
         required: true,
+      },
+      date: {
+        type: Date,
+        default: Date.now(),
       },
     },
   ],
@@ -109,5 +121,4 @@ var teamSchema = new Schema({
   },
 });
 
-//model takes argument modelname and schema
 module.exports = Team = mongoose.model("team", teamSchema);

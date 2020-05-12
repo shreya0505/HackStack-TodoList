@@ -86,17 +86,19 @@ router.post(
         return res
           .status(400)
           .json({ error: [{ msg: "User does not exist" }] });
-      } else {
-        if (!otp.localeCompare(user.otp)) {
-          (user.otp = newotp), (user.isVerified = true);
-          user.save();
-          res.json({ user });
-        } else {
-          return res
-            .status(400)
-            .json({ error: [{ msg: "OTP does not match" }] });
-        }
       }
+      if (user.isVerified) {
+        return res.status(400).json({
+          error: [{ msg: "User already verified. Proceed to login" }],
+        });
+      }
+      if (otp.localeCompare(user.otp)) {
+        return res.status(400).json({ error: [{ msg: "OTP does not match" }] });
+      }
+      user.otp = newotp;
+      user.isVerified = true;
+      user.save();
+      res.status(200).json({ success: [{ msg: "Email Verified" }] });
     } catch (err) {
       console.error(err.message);
       res.status(500).json({ error: [{ msg: "Server Error" }] });
@@ -231,5 +233,19 @@ router.post(
   }
 );
 
+router.get("/user", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).populate("team").populate("personal");
+    if (!user) {
+      res.status(400).json({ error: [{ msg: "User not found" }] });
+    }
+    console.log(typeof user.personal[0]);
+
+    res.json(user);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: [{ msg: "Server Error" }] });
+  }
+});
 
 module.exports = router;

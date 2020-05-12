@@ -16,10 +16,10 @@ var scheduleSchema = new Schema({
     default: false,
   },
 
-  days: {
-    type: [String],
+  days: [{
+    type: String,
     default: [],
-  },
+  }],
 
   duedate: {
     type: Date,

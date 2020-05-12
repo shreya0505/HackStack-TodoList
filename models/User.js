@@ -10,7 +10,7 @@ var userSchema = new Schema({
 
   name: {
     type: String,
-    required: true
+    required: true,
   },
 
   username: {
@@ -33,19 +33,19 @@ var userSchema = new Schema({
     required: true,
   },
 
-  labels: {
-    type: [String],
-  },
+  personal: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "personal",
+    },
+  ],
 
-  personal: {
-    type: [Schema.Types.ObjectId],
-    ref: "personal",
-  },
-
-  team: {
-    type: [Schema.Types.ObjectId],
-    ref: "team",
-  },
+  team: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "team",
+    },
+  ],
 
   date: {
     type: Date,

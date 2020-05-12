@@ -439,7 +439,12 @@ router.get("/project/:id", auth, async (req, res) => {
     return res.status(400).json({ error: [{ msg: "Page not found" }] });
   }
   try {
-    const team = await Team.findById(req.params.id);
+    const team = await Team.findById(req.params.id)
+      .populate("teamMembers", "username id")
+      .populate("manager", "username id")
+      .populate("task")
+      .populate("checklist")
+      .populate("notes");
     if (!team) {
       return res
         .status(400)
@@ -447,7 +452,7 @@ router.get("/project/:id", auth, async (req, res) => {
     }
 
     for (let i = 0; i < team.teamMembers.length; i++) {
-      str = team.teamMembers[i].toString();
+      str = team.teamMembers[i].id.toString();
       if (str.localeCompare(req.user.id)) {
         return res
           .status(400)
