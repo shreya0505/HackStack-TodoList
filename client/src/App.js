@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import "./App.css";
 import Landing from "./components/Layout/Landing";
@@ -8,18 +8,29 @@ import Login from "./components/Auth/Login";
 import Register from "./components/Auth/Register";
 import Verify from "./components/Auth/Verify";
 import Forgot from "./components/Auth/Forgot";
+import PrivateRoute from "./components/PrivateRoute";
 
 import { Provider } from "react-redux";
 import store from "./store";
+import { loadUser, setNotAuth } from "./actions/auth";
+import setAuthToken from "./utils/setAuthToken";
 
 const App = () => {
+  useEffect(() => {
+    if (localStorage.token) {
+      setAuthToken(localStorage.token);
+      store.dispatch(loadUser());
+    } else {
+      store.dispatch(setNotAuth());
+    }
+  }, []);
   return (
     <Provider store={store}>
       <div>
         <Router>
           <Navbar />
           <Switch>
-            <Route exact path="/" component={Landing} />
+            <PrivateRoute exact path="/" component={Landing} />
             <Route exact path="/register" component={Register} />
             <Route exact path="/login" component={Login} />
             <Route exact path="/verify" component={Verify} />
