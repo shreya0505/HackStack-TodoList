@@ -36,3 +36,64 @@
     transform: rotate(360deg);
   }
 }
+
+
+
+nav{
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:10px 20px 10px 6px;
+  background: #232326;
+}
+
+.logo{
+  display:inline-block;
+  width:40px;
+  height:40px;
+}
+
+.menu-item{
+  display:inline-block;
+  margin-left:15px;
+  margin-top: 10px;
+  font-weight:400;
+  color:#808080;
+}
+
+@media screen and (max-width: 540px) {
+  .content{
+      width: 100%;
+      margin: 10px auto;
+      padding: 20px;
+      text-align: center;
+      
+  }
+}
+
+
+@media screen and (min-width: 540px) and (max-width: 780px) {
+  .content{
+      width: 80%;
+      margin: 10px auto;
+      padding: 20px;
+      text-align: center;
+      
+  }
+}
+
+@media screen and (min-width: 780px)  {
+  .content{
+      width: 50%;
+      margin: 10px auto;
+      padding: 20px;
+      text-align: center;
+      
+  }
+}
+
+
