@@ -1,25 +1,39 @@
 var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 
-var personalSchema = new Schema({
-  user: {
+var teamSchema = new Schema({
+  manager: {
     type: Schema.Types.ObjectId,
     ref: "users",
   },
 
-  tile: {
+  teamJoinCode: {
     type: String,
     required: true,
   },
 
-  pinned: {
-    type: Boolean,
-    default: false,
+  teamMembers: {
+    type: [Schema.Types.ObjectId],
+    ref: "users",
   },
 
-  archived: {
-    type: Boolean,
-    default: false,
+  teamName: {
+    type: String,
+    required: true,
+  },
+
+  title: {
+    type: String,
+    required: true,
+  },
+  purpose: {
+    type: String,
+    required: true,
+  },
+
+  status: {
+    type: String,
+    default: "Ongoing",
   },
 
   task: {
@@ -36,19 +50,10 @@ var personalSchema = new Schema({
     type: [Schema.Types.ObjectId],
     ref: "stickyNotes",
   },
-
-  creators: [
-    {
-      object: {
-        type: [Schema.Types.ObjectId],
-        ref: "tasks",
-      },
-      owner: {
-        type: [Schema.Types.ObjectId],
-        ref: "users",
-      },
-    },
-  ],
+  completed: {
+    type: Boolean,
+    default: false,
+  },
 
   chat: [
     {
@@ -66,6 +71,30 @@ var personalSchema = new Schema({
       },
     },
   ],
+  activityLog: [
+    {
+      member: {
+        type: Schema.Types.ObjectId,
+        ref: "users",
+      },
+      action: {
+        type: String,
+        required: true,
+      },
+
+      target: {
+        type: String,
+        required: true,
+      },
+      targetid: {
+        type: Schema.Types.ObjectId,
+      },
+      time: {
+        type: Date,
+        default: Date.now(),
+      },
+    },
+  ],
 
   duedate: {
     type: Date,
@@ -75,7 +104,10 @@ var personalSchema = new Schema({
     type: Date,
     default: Date.now(),
   },
+  label: {
+    type: "String",
+  },
 });
 
 //model takes argument modelname and schema
-module.exports = Personal = mongoose.model("personal", personalSchema);
+module.exports = Team = mongoose.model("team", teamSchema);

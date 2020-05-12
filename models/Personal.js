@@ -35,6 +35,11 @@ var personalSchema = new Schema({
     default: "Ongoing",
   },
 
+  completed: {
+    type: Boolean,
+    default: false,
+  },
+
   task: {
     type: [Schema.Types.ObjectId],
     ref: "tasks",
@@ -46,7 +51,7 @@ var personalSchema = new Schema({
   },
   label: {
     type: String,
-    default:""
+    default: "",
   },
 
   notes: {
@@ -56,7 +61,6 @@ var personalSchema = new Schema({
 
   duedate: {
     type: Date,
-    default:"",
   },
 
   dateCreated: {

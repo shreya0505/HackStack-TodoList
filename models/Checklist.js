@@ -6,7 +6,7 @@ var checkListSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "users",
   },
-  
+
   listName: {
     type: String,
     required: true,

@@ -3,7 +3,7 @@ const config = require("config");
 const email = config.get("email");
 const pass = config.get("pass");
 
-module.exports.mailreset = (to, hash, name) => {
+module.exports.mailreset = async (to, hash, name) => {
   const transporter = nodemailer.createTransport({
     host: "smtp.ethereal.email",
     port: 587,

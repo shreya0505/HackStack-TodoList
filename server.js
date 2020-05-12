@@ -14,6 +14,7 @@ app.get("/", (req, res) => res.send("API RUNNING"));
 //define route
 app.use("/auth", require("./routes/auth"));
 app.use("/personal", require("./routes/personal"));
+app.use("/team", require("./routes/team"));
 
 const PORT = process.env.PORT || 5000;
 
@@ -43,7 +44,6 @@ io.on("connection", (socket) => {
     console.log("User has left");
   });
 });
-
 
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);

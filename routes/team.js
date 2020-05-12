@@ -1,0 +1,1035 @@
+const express = require("express");
+const router = express.Router();
+const auth = require("../middleware/auth");
+const { check, validationResult } = require("express-validator");
+const User = require("../models/User");
+const Checklist = require("../models/Checklist");
+const Schedule = require("../models/Schedule");
+const StickyNotes = require("../models/StickyNotes");
+const Tasks = require("../models/Tasks");
+const Team = require("../models/Team");
+const invite = require("../mailScript/invite");
+
+// C R U D
+//CREATE==================================================================================
+router.post(
+  "/",
+  [
+    check("teamName", "Name your team").notEmpty(),
+    check("inviteMembers", "Add atleast one member").exists(),
+    check("inviteMembers.*", "Enter valid email").isEmail(),
+    check("teamJoinCode", "Set team join code").notEmpty(),
+    check("title", "Title your project").notEmpty(),
+    check("purpose", "Purpose of project").notEmpty(),
+    check("teamJoinCode", "Code min length 6 characters").isLength({
+      min: 6,
+    }),
+  ],
+  auth,
+  async (req, res) => {
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+      return res.status(400).json({ error: error.array() });
+    }
+
+    const {
+      title,
+      duedate,
+      teamName,
+      inviteMembers,
+      teamJoinCode,
+      status,
+      label,
+      purpose,
+    } = req.body;
+
+    try {
+      const user = await User.findById(req.user.id).select("-password");
+      if (!user) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "User does not exists" }] });
+      }
+      let teamMembers = [];
+      teamMembers.push(req.user.id.toString());
+
+      let newTeam = new Team({
+        manager: req.user.id,
+        title,
+        duedate,
+        teamName,
+        teamMembers,
+        teamJoinCode,
+        status,
+        label,
+        purpose,
+      });
+
+      const team = await newTeam.save();
+      inviteMembers.forEach(async (email) => {
+        await invite.mailinvite(
+          email,
+          user.name,
+          teamName,
+          team.id,
+          teamJoinCode
+        );
+      });
+      user.team.unshift(team.id);
+      await user.save();
+      res.json(user);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).json({ error: [{ msg: "Server Error" }] });
+    }
+  }
+);
+
+router.post(
+  "/task/:id",
+  [check("taskName", "Task must be named").notEmpty()],
+  auth,
+  async (req, res) => {
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+      return res.status(400).json({ error: error.array() });
+    }
+    const {
+      repeat,
+      daily,
+      days,
+      duedate,
+      taskName,
+      description,
+      status,
+      priority,
+    } = req.body;
+
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ error: [{ msg: "Page not found" }] });
+    }
+    try {
+      const team = await Team.findById(req.params.id);
+      if (!team) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Project does not exists" }] });
+      }
+
+      const newSchedule = new Schedule({
+        owner: req.user.id,
+        repeat,
+        daily,
+        days,
+        duedate,
+      });
+
+      const schedule = await newSchedule.save();
+      const newTask = new Tasks({
+        owner: req.user.id,
+        taskName,
+        description,
+        status,
+        priority,
+        schedule: schedule.id,
+      });
+      const task = await newTask.save();
+      team.task.unshift(task.id);
+      const newActivityLog = {
+        member: req.user.id,
+        action: "post",
+        target: "task",
+        targetid: task.id,
+      };
+      team.activityLog.unshift(newActivityLog);
+      await team.save();
+      res.json(team);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).json({ error: [{ msg: "Server Error" }] });
+    }
+  }
+);
+
+router.post(
+  "/stickyNotes/:id",
+  [
+    check("title", "Note must be named").notEmpty(),
+    check("message", "Message is needed").notEmpty(),
+  ],
+  auth,
+  async (req, res) => {
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+      return res.status(400).json({ error: error.array() });
+    }
+    const { title, message } = req.body;
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ error: [{ msg: "Page not found" }] });
+    }
+    try {
+      const team = await Team.findById(req.params.id);
+      if (!team) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Project does not exists" }] });
+      }
+
+      for (let i = 0; i < team.teamMembers.length; i++) {
+        str = team.teamMembers[i].toString();
+        if (str.localeCompare(req.user.id)) {
+          return res
+            .status(400)
+            .json({ error: [{ msg: "Not authorizied to post" }] });
+        }
+      }
+
+      const newNote = new StickyNotes({
+        owner: req.user.id,
+        title,
+        message,
+      });
+
+      const note = await newNote.save();
+      team.notes.unshift(note.id);
+
+      const newActivityLog = {
+        member: req.user.id,
+        action: "update",
+        target: "stickynotes",
+        targetid: note.id,
+      };
+      team.activityLog.unshift(newActivityLog);
+      await team.save();
+      res.json(team);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).json({ error: [{ msg: "Server Error" }] });
+    }
+  }
+);
+
+router.post(
+  "/checklist/:id",
+  [check("listName", "List must be named").notEmpty()],
+  auth,
+  async (req, res) => {
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+      return res.status(400).json({ error: error.array() });
+    }
+    const {
+      listName,
+      description,
+      status,
+      priority,
+      listItems,
+      dueDate,
+    } = req.body;
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ error: [{ msg: "Page not found" }] });
+    }
+    try {
+      const team = await Team.findById(req.params.id);
+      if (!team) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Project does not exists" }] });
+      }
+
+      for (let i = 0; i < team.teamMembers.length; i++) {
+        str = team.teamMembers[i].toString();
+        if (str.localeCompare(req.user.id)) {
+          return res
+            .status(400)
+            .json({ error: [{ msg: "Not authorizied to post" }] });
+        }
+      }
+
+      const newChecklist = new Checklist({
+        owner: req.user.id,
+        listName,
+        description,
+        status,
+        priority,
+        listItems,
+        dueDate,
+      });
+
+      const list = await newChecklist.save();
+      team.checklist.unshift(list.id);
+      const newActivityLog = {
+        member: req.user.id,
+        action: "post",
+        target: "checklist",
+        targetid: list.id,
+      };
+      team.activityLog.unshift(newActivityLog);
+      await team.save();
+      await team.save();
+      res.json(team);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).json({ error: [{ msg: "Server Error" }] });
+    }
+  }
+);
+
+// router.post(
+//   "/activityLog/:id",
+//   [
+//     check("member", "Member required").notEmpty(),
+//     check("action", "Action required").notEmpty(),
+//     check("target", "Target required").notEmpty(),
+//     check("targetid", "Targetid required").notEmpty(),
+//   ],
+//   auth,
+//   async (req, res) => {
+//     const error = validationResult(req);
+//     if (!error.isEmpty()) {
+//       return res.status(500).json({ error: error.array() });
+//     }
+//     const { member, action, target, targetid } = req.body;
+//     if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+//       return res.status(400).json({ error: [{ msg: "Page not found" }] });
+//     }
+//     try {
+//       const team = await Team.findById(req.params.id);
+//       if (!team) {
+//         return res
+//           .status(400)
+//           .json({ error: [{ msg: "Project does not exists" }] });
+//       }
+
+//       const newActivity = {
+//         member,
+//         action,
+//         target,
+//         targetid,
+//       };
+//       team.activityLog.unshift(newActivity);
+
+//       const logged = await team.save();
+//       res.json(logged);
+//     } catch (err) {
+//       console.error(err.message);
+//       res.status(500).json({ error: [{ msg: "Server Error" }] });
+//     }
+//   }
+// );
+
+router.post(
+  "/join/:id",
+  [
+    check("teamid", "Enter Team Id recieved in Invitation Mail").notEmpty(),
+    check(
+      "teamJoinCode",
+      " Enter Team Join Code recieved in Invitation Mail"
+    ).notEmpty(),
+  ],
+  auth,
+  async (req, res) => {
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+      return res.status(500).json({ error: error.array() });
+    }
+    const { teamid, teamJoinCode } = req.body;
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ error: [{ msg: "Page not found" }] });
+    }
+    try {
+      const team = await Team.findById(req.params.id);
+      if (!team) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Project does not exists" }] });
+      }
+
+      for (let i = 0; i < team.teamMembers.length; i++) {
+        str = team.teamMembers[i].toString();
+        if (!str.localeCompare(req.user.id)) {
+          return res
+            .status(400)
+            .json({ error: [{ msg: "You are already a part of the team" }] });
+        }
+      }
+
+      if (
+        teamid.toString() === team.id.toString() &&
+        teamJoinCode === team.teamJoinCode
+      )
+        team.teamMembers.unshift(req.user.id);
+      else {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Invalid Credentials" }] });
+      }
+      const newActivityLog = {
+        member: req.user.id,
+        action: "joined",
+        target: "welcome",
+        targetid: req.user.id,
+      };
+      team.activityLog.unshift(newActivityLog);
+
+      await team.save();
+      const user = User.findById(req.user.id);
+      user.team.unshift(team.id);
+      await user.save();
+      res.json(user);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).json({ error: [{ msg: "Server Error" }] });
+    }
+  }
+);
+
+router.post(
+  "/sendInvites/:id",
+  [
+    check("inviteMembers", "Add atleast one member").exists(),
+    check("inviteMembers.*", "Enter valid email").isEmail(),
+  ],
+  auth,
+  async (req, res) => {
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+      return res.status(500).json({ error: error.array() });
+    }
+    const { inviteMembers } = req.body;
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ error: [{ msg: "Page not found" }] });
+    }
+    try {
+      const team = await Team.findById(req.params.id);
+      if (!team) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Project does not exists" }] });
+      }
+
+      if (req.user.id !== team.manager.toString()) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Only Team Manager can send Invites" }] });
+      }
+
+      inviteMembers.forEach(async (email) => {
+        await invite.mailinvite(
+          email,
+          "someone",
+          team.teamName,
+          team.id,
+          team.teamJoinCode
+        );
+      });
+
+      res.status(200).json({ success: [{ msg: "Sent Invites Successfully" }] });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).json({ error: [{ msg: "Server Error" }] });
+    }
+  }
+);
+
+//READ==================================================================================
+
+router.get("/project/:id", auth, async (req, res) => {
+  if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+  try {
+    const team = await Team.findById(req.params.id);
+    if (!team) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Project does not exists" }] });
+    }
+
+    for (let i = 0; i < team.teamMembers.length; i++) {
+      str = team.teamMembers[i].toString();
+      if (str.localeCompare(req.user.id)) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Not authorizied to post" }] });
+      }
+    }
+
+    res.json(team);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: [{ msg: "Server Error" }] });
+  }
+});
+
+router.get("/task/:id/:pid", auth, async (req, res) => {
+  if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+  if (!req.params.pid.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+  try {
+    const team = await Team.findById(req.params.pid);
+    if (!team) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Project does not exists" }] });
+    }
+
+    const task = await Tasks.findById(req.params.id).populate("schedule");
+    if (!task) {
+      return res.status(400).json({ error: [{ msg: "Task does not exists" }] });
+    }
+    for (let i = 0; i < team.teamMembers.length; i++) {
+      str = team.teamMembers[i].toString();
+      if (str.localeCompare(req.user.id)) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Not authorizied to view" }] });
+      }
+    }
+    res.json(task);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: [{ msg: "Server Error" }] });
+  }
+});
+
+router.get("/stickyNotes/:id/:pid", auth, async (req, res) => {
+  if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+  if (!req.params.pid.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+  try {
+    const team = await Team.findById(req.params.pid);
+    if (!team) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Project does not exists" }] });
+    }
+    const note = await StickyNotes.findById(req.params.id);
+    if (!note) {
+      return res.status(400).json({ error: [{ msg: "Note does not exists" }] });
+    }
+
+    for (let i = 0; i < team.teamMembers.length; i++) {
+      str = team.teamMembers[i].toString();
+      if (str.localeCompare(req.user.id)) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Not authorizied to post" }] });
+      }
+    }
+    res.json(note);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: [{ msg: "Server Error" }] });
+  }
+});
+
+router.get("/checklist/:id/:pid", auth, async (req, res) => {
+  if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+  if (!req.params.pid.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+  try {
+    const team = await Team.findById(req.params.pid);
+    if (!team) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Project does not exists" }] });
+    }
+    const list = await Checklist.findById(req.params.id);
+    if (!list) {
+      return res.status(400).json({ error: [{ msg: "List does not exists" }] });
+    }
+    for (let i = 0; i < team.teamMembers.length; i++) {
+      str = team.teamMembers[i].toString();
+      if (str.localeCompare(req.user.id)) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Not authorizied to post" }] });
+      }
+    }
+    res.json(list);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: [{ msg: "Server Error" }] });
+  }
+});
+
+//UPDATE==================================================================================
+
+router.put(
+  "/updateProject/:id",
+  [check("title", "Title is required").notEmpty()],
+  auth,
+  async (req, res) => {
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+      return res.status(400).json({ error: error.array() });
+    }
+
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ error: [{ msg: "Page not found" }] });
+    }
+
+    try {
+      const team = await Team.findById(req.params.id);
+      if (!team) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Project does not exists" }] });
+      }
+      for (let i = 0; i < team.teamMembers.length; i++) {
+        str = team.teamMembers[i].toString();
+        if (str.localeCompare(req.user.id)) {
+          return res
+            .status(400)
+            .json({ error: [{ msg: "Not authorizied to post" }] });
+        }
+      }
+      const updated = await Team.findByIdAndUpdate(req.params.id, req.body);
+      await updated.save();
+      const newActivityLog = {
+        member: req.user.id,
+        action: "update",
+        target: "project",
+        targetid: req.params.id,
+      };
+      updated.activityLog.unshift(newActivityLog);
+      await updated.save();
+      res.status(200).json({ success: [{ msg: "Project updated" }] });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).json({ success: [{ msg: "Server Error" }] });
+    }
+  }
+);
+
+router.put(
+  "/updatetask/:id/:pid",
+  [check("taskName", "Task must be named").notEmpty()],
+  auth,
+  async (req, res) => {
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+      return res.status(400).json({ error: error.array() });
+    }
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ error: [{ msg: "Page not found" }] });
+    }
+    if (!req.params.pid.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ error: [{ msg: "Page not found" }] });
+    }
+
+    try {
+      const team = await Team.findById(req.params.pid);
+      if (!team) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Project does not exists" }] });
+      }
+      const task = await Tasks.findById(req.params.id);
+      if (!task) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Task does not exists" }] });
+      }
+      for (let i = 0; i < team.teamMembers.length; i++) {
+        str = team.teamMembers[i].toString();
+        if (str.localeCompare(req.user.id)) {
+          return res
+            .status(400)
+            .json({ error: [{ msg: "Not authorizied to post" }] });
+        }
+      }
+
+      let updated = await Tasks.findByIdAndUpdate(req.params.id, req.body);
+      await updated.save();
+      const newActivityLog = {
+        member: req.user.id,
+        action: "update",
+        target: "task",
+        targetid: req.params.id,
+      };
+      team.activityLog.unshift(newActivityLog);
+      await team.save();
+      res.status(200).json({ success: [{ msg: "Task updated" }] });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).json({ error: [{ msg: "Server Error" }] });
+    }
+  }
+);
+
+router.put("/updateSchedule/:id/:pid", auth, async (req, res) => {
+  if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+  if (!req.params.pid.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+  try {
+    const team = await Team.findById(req.params.pid);
+    if (!team) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Project does not exists" }] });
+    }
+    const schedule = await Schedule.findById(req.params.id);
+    if (!schedule) {
+      return res.status(400).json({ error: [{ msg: "Task does not exists" }] });
+    }
+    for (let i = 0; i < team.teamMembers.length; i++) {
+      str = team.teamMembers[i].toString();
+      if (str.localeCompare(req.user.id)) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Not authorizied to post" }] });
+      }
+    }
+    let updated = await Schedule.findByIdAndUpdate(req.params.id, req.body);
+    await updated.save();
+    const newActivityLog = {
+      member: req.user.id,
+      action: "update",
+      target: "schedule",
+      targetid: req.params.id,
+    };
+    team.activityLog.unshift(newActivityLog);
+    await team.save();
+    res.status(200).json({ success: [{ msg: "Schedule updated" }] });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: [{ msg: "Server Error" }] });
+  }
+});
+
+router.put(
+  "/updateStickyNotes/:id/:pid",
+  [
+    check("title", "Note must be named").notEmpty(),
+    check("message", "Message is needed").notEmpty(),
+  ],
+  auth,
+  async (req, res) => {
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+      return res.status(400).json({ error: error.array() });
+    }
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ error: [{ msg: "Page not found" }] });
+    }
+    if (!req.params.pid.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ error: [{ msg: "Page not found" }] });
+    }
+    try {
+      const team = await Team.findById(req.params.pid);
+      if (!team) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Project does not exists" }] });
+      }
+      const note = await StickyNotes.findById(req.params.id);
+      if (!note) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Note does not exists" }] });
+      }
+
+      for (let i = 0; i < team.teamMembers.length; i++) {
+        str = team.teamMembers[i].toString();
+        if (str.localeCompare(req.user.id)) {
+          return res
+            .status(400)
+            .json({ error: [{ msg: "Not authorizied to post" }] });
+        }
+      }
+
+      const updated = await StickyNotes.findByIdAndUpdate(
+        req.params.id,
+        req.body
+      );
+      await updated.save();
+      const newActivityLog = {
+        member: req.user.id,
+        action: "update",
+        target: "stickynotes",
+        targetid: req.params.id,
+      };
+      team.activityLog.unshift(newActivityLog);
+      await team.save();
+      res.status(200).json({ success: [{ msg: "StickyNotes updated" }] });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).json({ error: [{ msg: "Server Error" }] });
+    }
+  }
+);
+
+router.put(
+  "/updateChecklist/:id/:pid",
+  [check("listName", "List must be named").notEmpty()],
+  auth,
+  async (req, res) => {
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+      return res.status(400).json({ error: error.array() });
+    }
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ error: [{ msg: "Page not found" }] });
+    }
+    if (!req.params.pid.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ error: [{ msg: "Page not found" }] });
+    }
+
+    try {
+      const team = await Team.findById(req.params.pid);
+      if (!team) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Project does not exists" }] });
+      }
+      const list = await Checklist.findById(req.params.id);
+      if (!list) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "List does not exists" }] });
+      }
+      for (let i = 0; i < team.teamMembers.length; i++) {
+        str = team.teamMembers[i].toString();
+        if (str.localeCompare(req.user.id)) {
+          return res
+            .status(400)
+            .json({ error: [{ msg: "Not authorizied to post" }] });
+        }
+      }
+      const updated = await Checklist.findByIdAndUpdate(
+        req.params.id,
+        req.body
+      );
+      await updated.save();
+      const newActivityLog = {
+        member: req.user.id,
+        action: "update",
+        target: "checklist",
+        targetid: req.params.id,
+      };
+      team.activityLog.unshift(newActivityLog);
+      await team.save();
+      res.status(200).json({ success: [{ msg: "Checklist updated" }] });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).json({ error: [{ msg: "Server Error" }] });
+    }
+  }
+);
+
+router.put("/completed/:id", auth, async (req, res) => {
+  if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+  try {
+    const team = await Team.findById(req.params.id);
+    if (!team) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Project does not exists" }] });
+    }
+    if (req.user.id !== team.manger.toString()) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Not authorized to edit" }] });
+    }
+    team.completed = !team.completed;
+    await team.save();
+    res.status(200).json({ success: [{ msg: "Successful action" }] });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: [{ msg: "Server Error" }] });
+  }
+});
+
+//DELETE==================================================================================
+
+router.delete("/deleteProject/:id", auth, async (req, res) => {
+  if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+  try {
+    const team = await Team.findById(req.params.id);
+    if (!team) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Project does not exists" }] });
+    }
+
+    if (req.user.id !== team.manager.toString()) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Not authorized to delete" }] });
+    }
+
+    task = team.task;
+    for (let i = 0; i < task.length; i++) {
+      const currentTask = await Tasks.findById(task[i]);
+      await Schedule.findByIdAndDelete(currentTask.schedule);
+      await Tasks.findByIdAndDelete(task[i]);
+    }
+
+    checklist = team.checklist;
+    for (let i = 0; i < checklist.length; i++) {
+      await Checklist.findByIdAndDelete(checklist[i]);
+    }
+
+    notes = team.notes;
+    for (let i = 0; i < notes.length; i++) {
+      await StickyNotes.findByIdAndDelete(notes[i]);
+    }
+    for (let i = 0; i < team.teamMembers.length; i++) {
+      let user = await User.findById(team.teamMembers[i]);
+      user.team = user.team.filter((id) => id.toString() !== req.params.id);
+      await user.save();
+    }
+    await Team.findByIdAndDelete(req.params.id);
+
+    res.status(200).json({ success: [{ msg: "Project deleted" }] });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: [{ msg: "Server Error" }] });
+  }
+});
+
+router.delete("/deletetask/:id/:pid", auth, async (req, res) => {
+  if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+  if (!req.params.pid.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+  try {
+    const team = await Team.findById(req.params.pid);
+    if (!team) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Project does not exists" }] });
+    }
+
+    const task = await Tasks.findById(req.params.id);
+    if (!task) {
+      return res.status(400).json({ error: [{ msg: "Task does not exists" }] });
+    }
+    if (req.user.id !== task.owner.toString()) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Not authorized to edit" }] });
+    }
+    await Schedule.findByIdAndDelete(task.schedule);
+    await Tasks.findByIdAndDelete(req.params.id);
+    team.task = team.task.filter((id) => id.toString() !== req.params.id);
+    const newActivityLog = {
+      member: req.user.id,
+      action: "delete",
+      target: "task",
+      targetid: req.params.id,
+    };
+    team.activityLog.unshift(newActivityLog);
+    await team.save();
+    res.status(200).json({ success: [{ msg: "Task deleted" }] });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: [{ msg: "Server Error" }] });
+  }
+});
+
+router.delete("/deleteStickyNotes/:id/:pid", auth, async (req, res) => {
+  if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+  if (!req.params.pid.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+  try {
+    const team = await Team.findById(req.params.pid);
+    if (!team) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Project does not exists" }] });
+    }
+    const note = await StickyNotes.findById(req.params.id);
+    if (!note) {
+      return res.status(400).json({ error: [{ msg: "Note does not exists" }] });
+    }
+
+    if (req.user.id !== note.owner.toString()) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Not authorized to edit" }] });
+    }
+
+    await StickyNotes.findByIdAndDelete(req.params.id);
+    team.notes = team.notes.filter((id) => id.toString() !== req.params.id);
+    const newActivityLog = {
+      member: req.user.id,
+      action: "delete",
+      target: "stickynotes",
+      targetid: req.params.id,
+    };
+    team.activityLog.unshift(newActivityLog);
+    await team.save();
+    res.status(200).json({ success: [{ msg: "StickyNotes deleted" }] });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: [{ msg: "Server Error" }] });
+  }
+});
+
+router.delete("/deleteChecklist/:id/:pid", auth, async (req, res) => {
+  if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+  if (!req.params.pid.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+  try {
+    const team = await Team.findById(req.params.pid);
+    if (!team) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Project does not exists" }] });
+    }
+    const list = await Checklist.findById(req.params.id);
+    if (!list) {
+      return res.status(400).json({ error: [{ msg: "List does not exists" }] });
+    }
+    if (req.user.id !== list.owner.toString()) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Not authorized to edit" }] });
+    }
+    await Checklist.findByIdAndDelete(req.params.id);
+    team.checklist = team.checklist.filter(
+      (id) => id.toString() !== req.params.id
+    );
+    const newActivityLog = {
+      member: req.user.id,
+      action: "delete",
+      target: "checklist",
+      targetid: req.params.id,
+    };
+    team.activityLog.unshift(newActivityLog);
+    await team.save();
+    res.status(200).json({ success: [{ msg: "Checklist deleted" }] });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: [{ msg: "Server Error" }] });
+  }
+});
+
+module.exports = router;

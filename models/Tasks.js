@@ -16,8 +16,13 @@ var taskSchema = new Schema({
     default: "",
   },
   status: {
+    type: String,
+    default: "Ongoing",
+  },
+  
+  completed: {
     type: Boolean,
-    default: false,
+    default: "false",
   },
 
   priority: {

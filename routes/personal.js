@@ -92,6 +92,11 @@ router.post(
           .status(400)
           .json({ error: [{ msg: "Project does not exists" }] });
       }
+      if (req.user.id !== personal.owner.toString()) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Not authorized to post" }] });
+      }
 
       const newSchedule = new Schedule({
         owner: req.user.id,
@@ -144,6 +149,11 @@ router.post(
           .status(400)
           .json({ error: [{ msg: "Project does not exists" }] });
       }
+      if (req.user.id !== personal.owner.toString()) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Not authorized to post" }] });
+      }
 
       const newNote = new StickyNotes({
         owner: req.user.id,
@@ -188,6 +198,11 @@ router.post(
         return res
           .status(400)
           .json({ error: [{ msg: "Project does not exists" }] });
+      }
+      if (req.user.id !== personal.owner.toString()) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Not authorized to post" }] });
       }
 
       const newChecklist = new Checklist({
@@ -242,7 +257,7 @@ router.get("/task/:id", auth, async (req, res) => {
     return res.status(400).json({ error: [{ msg: "Page not found" }] });
   }
   try {
-    const task = await Tasks.findById(req.params.id);
+    const task = await Tasks.findById(req.params.id).populate("schedule");
     if (!task) {
       return res.status(400).json({ error: [{ msg: "Task does not exists" }] });
     }
@@ -271,7 +286,7 @@ router.get("/stickyNotes/:id", auth, async (req, res) => {
     if (req.user.id !== note.owner.toString()) {
       return res
         .status(400)
-        .json({ error: [{ msg: "Not authorized to edit" }] });
+        .json({ error: [{ msg: "Not authorized to view" }] });
     }
     res.json(note);
   } catch (err) {
@@ -292,7 +307,7 @@ router.get("/checklist/:id", auth, async (req, res) => {
     if (req.user.id !== list.owner.toString()) {
       return res
         .status(400)
-        .json({ error: [{ msg: "Not authorized to edit" }] });
+        .json({ error: [{ msg: "Not authorized to view" }] });
     }
     res.json(list);
   } catch (err) {
@@ -478,6 +493,83 @@ router.put(
     }
   }
 );
+
+router.put("/pinned/:id", auth, async (req, res) => {
+  if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+
+  try {
+    const personal = await Personal.findById(req.params.id);
+    if (!personal) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Project does not exists" }] });
+    }
+    if (req.user.id !== personal.owner.toString()) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Not authorized to edit" }] });
+    }
+    personal.pinned = !personal.pinned;
+    await personal.save();
+    res.status(200).json({ success: [{ msg: "Successful pin action" }] });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: [{ msg: "Server Error" }] });
+  }
+});
+
+router.put("/archived/:id", auth, async (req, res) => {
+  if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+
+  try {
+    const personal = await Personal.findById(req.params.id);
+    if (!personal) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Project does not exists" }] });
+    }
+    if (req.user.id !== personal.owner.toString()) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Not authorized to edit" }] });
+    }
+    personal.archived = !personal.archived;
+    await personal.save();
+    res.status(200).json({ success: [{ msg: "Successful archive action" }] });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: [{ msg: "Server Error" }] });
+  }
+});
+
+router.put("/completed/:id", auth, async (req, res) => {
+  if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+  try {
+    const personal = await Personal.findById(req.params.id);
+    if (!personal) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Project does not exists" }] });
+    }
+    if (req.user.id !== personal.owner.toString()) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Not authorized to edit" }] });
+    }
+    personal.completed = !personal.completed;
+    await personal.save();
+    res.status(200).json({ success: [{ msg: "Successful action" }] });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: [{ msg: "Server Error" }] });
+  }
+});
 
 //DELETE==================================================================================
 router.delete("/deleteProject/:id", auth, async (req, res) => {
