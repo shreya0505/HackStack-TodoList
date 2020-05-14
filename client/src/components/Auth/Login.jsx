@@ -11,7 +11,7 @@ export const Login = ({
   auth: { isAuthenticated },
 }) => {
   useEffect(() => {
-    if (isAuthenticated) window.location.href = "/";
+    if (isAuthenticated) window.location.href = "/dashboard";
   }, [isAuthenticated]);
   const [formData, setFormData] = useState({
     email: "",
@@ -75,7 +75,7 @@ export const Login = ({
               />
 
               <button
-                class="btn btn-primary btn-lg"
+                class="btn btn-dark btn-lg"
                 style={{ letterSpacing: "2px", marginTop: "20px" }}
               >
                 LOGIN
@@ -89,7 +89,17 @@ export const Login = ({
               }}
             >
               {" "}
-              Don't have an account? <Link to="/Register">Register</Link>{" "}
+              Don't have an account? <Link to="/register">Register</Link>{" "}
+            </p>
+            <p
+              style={{
+                color: "grey",
+                textAlign: "center",
+                letterSpacing: "1.5px",
+              }}
+            >
+              {" "}
+              Forgot Password? <Link to="/forgot">Reset</Link>{" "}
             </p>
           </div>
         </div>

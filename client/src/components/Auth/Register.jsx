@@ -135,7 +135,7 @@ export const Register = () => {
               />
 
               <button
-                class="btn btn-primary btn-lg"
+                class="btn btn-dark btn-lg"
                 style={{ letterSpacing: "2px", marginTop: "20px" }}
               >
                 REGISTER

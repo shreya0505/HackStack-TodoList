@@ -16,12 +16,17 @@ var scheduleSchema = new Schema({
     default: false,
   },
 
-  days: [{
-    type: String,
-    default: [],
-  }],
+  weekly: [
+    {
+      type: String,
+    },
+  ],
 
-  duedate: {
+  startdate: {
+    type: Date,
+    default: Date.now(),
+  },
+  enddate: {
     type: Date,
   },
 });

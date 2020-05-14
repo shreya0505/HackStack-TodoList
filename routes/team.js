@@ -34,7 +34,7 @@ router.post(
 
     const {
       title,
-      duedate,
+      enddate,
       teamName,
       inviteMembers,
       teamJoinCode,
@@ -56,7 +56,7 @@ router.post(
       let newTeam = new Team({
         manager: req.user.id,
         title,
-        duedate,
+        enddate,
         teamName,
         teamMembers,
         teamJoinCode,
@@ -97,8 +97,8 @@ router.post(
     const {
       repeat,
       daily,
-      days,
-      duedate,
+      weekly,
+      enddate,
       taskName,
       description,
       status,
@@ -120,8 +120,8 @@ router.post(
         owner: req.user.id,
         repeat,
         daily,
-        days,
-        duedate,
+        weekly,
+        enddate,
       });
 
       const schedule = await newSchedule.save();
@@ -224,7 +224,7 @@ router.post(
       status,
       priority,
       listItems,
-      dueDate,
+      enddate,
     } = req.body;
     if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({ error: [{ msg: "Page not found" }] });
@@ -253,7 +253,7 @@ router.post(
         status,
         priority,
         listItems,
-        dueDate,
+        enddate,
       });
 
       const list = await newChecklist.save();

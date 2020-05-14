@@ -12,10 +12,6 @@ var checkListSchema = new Schema({
     required: true,
   },
 
-  description: {
-    type: String,
-    default: "",
-  },
 
   status: {
     type: Boolean,
@@ -40,8 +36,9 @@ var checkListSchema = new Schema({
     },
   ],
 
-  dueDate: {
-    type: Date,
+  schedule: {
+    type: Schema.Types.ObjectId,
+    ref: "schedule",
   },
 
   dateCreated: {

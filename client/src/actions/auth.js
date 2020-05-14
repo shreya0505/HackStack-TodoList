@@ -24,8 +24,8 @@ export const login = ({ email, password }) => async (dispatch) => {
 
 export const loadUser = () => async (dispatch) => {
   try {
-    const res = await axios.get("auth/user");
-    console.log(res);
+    const res = await axios.get("/auth/user");
+
     dispatch({
       type: USER_LOADED,
       payload: res.data,

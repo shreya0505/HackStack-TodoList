@@ -4,3 +4,5 @@ export const USER_LOADED = "USER_LOADED";
 export const AUTH_ERROR = "AUTH_ERROR";
 export const LOGOUT = "LOGOUT";
 export const NO_LOCAL_TOKEN = "NO_LOCAL_TOKEN";
+
+export const GET_PERSONAL = "GET_PERSONAL"

@@ -15,11 +15,7 @@ var taskSchema = new Schema({
     type: String,
     default: "",
   },
-  status: {
-    type: String,
-    default: "Ongoing",
-  },
-  
+
   completed: {
     type: Boolean,
     default: "false",
@@ -39,9 +35,7 @@ var taskSchema = new Schema({
     type: Date,
     default: Date.now(),
   },
-  duedate: {
-    type: Date,
-  },
+
 });
 
 module.exports = Tasks = mongoose.model("tasks", taskSchema);

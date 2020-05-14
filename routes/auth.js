@@ -134,7 +134,14 @@ router.post(
       ).toString();
       await user.save();
 
-      return res.json(user);
+      return res.status(200).json({
+        success: [
+          {
+            msg:
+              "Temporary password has been mailed to your registered email address.",
+          },
+        ],
+      });
     } catch (err) {
       console.error(err.message);
       res.status(500).json({ error: [{ msg: "Server Error" }] });
@@ -235,11 +242,12 @@ router.post(
 
 router.get("/user", auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).populate("team").populate("personal");
+    const user = await User.findById(req.user.id)
+      .populate("team")
+      .populate("personal");
     if (!user) {
       res.status(400).json({ error: [{ msg: "User not found" }] });
     }
-    console.log(typeof user.personal[0]);
 
     res.json(user);
   } catch (err) {

@@ -21,16 +21,7 @@ router.post(
     if (!error.isEmpty()) {
       return res.status(400).json({ error: error.array() });
     }
-    const {
-      title,
-      duedate,
-      description,
-      color,
-      pinned,
-      archived,
-      status,
-      label,
-    } = req.body;
+    const { title, enddate, description, pinned, label, startdate } = req.body;
 
     try {
       const user = await User.findById(req.user.id).select("-password");
@@ -43,19 +34,16 @@ router.post(
       let newPersonal = new Personal({
         owner: req.user.id,
         title,
-        duedate,
+        enddate,
         description,
-        color,
-        pinned,
-        archived,
-        status,
         label,
+        startdate,
       });
 
       const personal = await newPersonal.save();
-      user.personal.push(personal.id);
+      user.personal.unshift(personal.id);
       await user.save();
-      res.json(user);
+      res.json(personal.id);
     } catch (err) {
       console.error(err.message);
       res.status(500).json({ error: [{ msg: "Server Error" }] });
@@ -72,14 +60,15 @@ router.post(
     if (!error.isEmpty()) {
       return res.status(400).json({ error: error.array() });
     }
+
     const {
       repeat,
       daily,
-      days,
-      duedate,
+      weekly,
+      enddate,
+      statdate,
       taskName,
       description,
-      status,
       priority,
     } = req.body;
 
@@ -103,8 +92,9 @@ router.post(
         owner: req.user.id,
         repeat,
         daily,
-        days,
-        duedate,
+        weekly,
+        enddate,
+        statdate,
       });
 
       const schedule = await newSchedule.save();
@@ -112,14 +102,15 @@ router.post(
         owner: req.user.id,
         taskName,
         description,
-        status,
         priority,
         schedule: schedule.id,
       });
       const task = await newTask.save();
-      personal.task.push(task.id);
+      personal.task.unshift(task.id);
       await personal.save();
-      res.json(personal);
+      return res
+        .status(200)
+        .json({ success: [{ msg: "Task added Successfully" }] });
     } catch (err) {
       console.error(err.message);
       res.status(500).json({ error: [{ msg: "Server Error" }] });
@@ -163,9 +154,11 @@ router.post(
       });
 
       const note = await newNote.save();
-      personal.notes.push(note.id);
+      personal.notes.unshift(note.id);
       await personal.save();
-      res.json(personal);
+      return res
+        .status(200)
+        .json({ success: [{ msg: "Note added Successfully" }] });
     } catch (err) {
       console.error(err.message);
       res.status(500).json({ error: [{ msg: "Server Error" }] });
@@ -183,13 +176,16 @@ router.post(
       return res.status(400).json({ error: error.array() });
     }
     const {
+      repeat,
+      daily,
+      weekly,
+      enddate,
+      statdate,
       listName,
-      description,
-      status,
+
       priority,
-      listItems,
-      dueDate,
     } = req.body;
+
     if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({ error: [{ msg: "Page not found" }] });
     }
@@ -206,20 +202,29 @@ router.post(
           .json({ error: [{ msg: "Not authorized to post" }] });
       }
 
-      const newChecklist = new Checklist({
+      const newSchedule = new Schedule({
         owner: req.user.id,
-        listName,
-        description,
-        status,
-        priority,
-        listItems,
-        dueDate,
+        repeat,
+        daily,
+        weekly,
+        enddate,
+        statdate,
       });
 
-      const list = await newChecklist.save();
-      personal.checklist.push(list.id);
+      const schedule = await newSchedule.save();
+      const newList = new Checklist({
+        owner: req.user.id,
+        listName,
+
+        priority,
+        schedule: schedule.id,
+      });
+      const list = await newList.save();
+      personal.checklist.unshift(list.id);
       await personal.save();
-      res.json(personal);
+      return res
+        .status(200)
+        .json({ success: [{ msg: "List added Successfully" }] });
     } catch (err) {
       console.error(err.message);
       res.status(500).json({ error: [{ msg: "Server Error" }] });
@@ -235,9 +240,16 @@ router.get("/project/:id", auth, async (req, res) => {
   }
   try {
     const personal = await Personal.findById(req.params.id)
-      .populate("task")
       .populate("checklist")
-      .populate("notes");
+      .populate("notes")
+      .populate({
+        path: "task",
+        populate: {
+          path: "schedule",
+          model: "schedule",
+        },
+      });
+
     if (!personal) {
       return res
         .status(400)
@@ -570,6 +582,33 @@ router.put("/completed/:id", auth, async (req, res) => {
     personal.completed = !personal.completed;
     await personal.save();
     res.status(200).json({ success: [{ msg: "Successful action" }] });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: [{ msg: "Server Error" }] });
+  }
+});
+
+router.put("/togglelist/:id/:cid", auth, async (req, res) => {
+  if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+  if (!req.params.cid.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+  try {
+    const list = await Checklist.findById(req.params.id);
+    if (!list) {
+      return res.status(400).json({ error: [{ msg: "List does not exists" }] });
+    }
+    if (req.user.id !== list.owner.toString()) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Not authorized to edit" }] });
+    }
+    const item = list.listItems.find((item) => item.id === req.params.cid);
+    item.status = !item.status;
+    list.save();
+    res.status(200).json({ success: [{ msg: "Successful pin action" }] });
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: [{ msg: "Server Error" }] });

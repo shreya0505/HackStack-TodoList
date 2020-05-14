@@ -100,7 +100,7 @@ export const Verify = () => {
                 letterSpacing: "1.5px",
               }}
             >
-              Already have an account? <Link to="/login">Login</Link>
+              Already verified? <Link to="/login">Login</Link>
             </p>
             <p
               style={{

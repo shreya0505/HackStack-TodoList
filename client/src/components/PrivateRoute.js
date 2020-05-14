@@ -12,7 +12,7 @@ const PrivateRoute = ({
     {...rest}
     render={(props) =>
       isAuthenticated === null ? (
-        <h1 style={{ marginTop: "100px" }}> Loading...</h1>
+        <h1 className="landing-content"> Loading...</h1>
       ) : isAuthenticated === false ? (
         (window.location.href = "/login")
       ) : (

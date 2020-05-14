@@ -33,10 +33,7 @@ var teamSchema = new Schema({
     required: true,
   },
 
-  status: {
-    type: String,
-    default: "Ongoing",
-  },
+
 
   task: [
     {
@@ -108,7 +105,7 @@ var teamSchema = new Schema({
     },
   ],
 
-  duedate: {
+  enddate: {
     type: Date,
   },
 

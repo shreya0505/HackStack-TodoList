@@ -18,6 +18,10 @@ var snSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  priority: {
+    type: Number,
+    default: 0,
+  },
 });
 
 module.exports = stickyNote = mongoose.model("stickyNotes", snSchema);

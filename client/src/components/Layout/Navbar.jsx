@@ -7,7 +7,7 @@ import { logout } from "../../actions/auth";
 export const Navbar = ({ logout, auth: { isAuthenticated } }) => {
   return (
     <div>
-      <nav>
+      <nav style={{height:"10vh"}}>
         <span style={{ margin: "5px 15px" }}>
           <Link to="/" style={{ textDecoration: "none" }}>
             <span

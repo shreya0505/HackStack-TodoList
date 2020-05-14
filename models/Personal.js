@@ -13,11 +13,6 @@ var personalSchema = new Schema({
   },
   description: {
     type: String,
-    default: "",
-  },
-  color: {
-    type: String,
-    default: "white",
   },
 
   pinned: {
@@ -28,11 +23,6 @@ var personalSchema = new Schema({
   archived: {
     type: Boolean,
     default: false,
-  },
-
-  status: {
-    type: String,
-    default: "Ongoing",
   },
 
   completed: {
@@ -53,6 +43,7 @@ var personalSchema = new Schema({
       ref: "checkLists",
     },
   ],
+
   label: {
     type: String,
     default: "",
@@ -64,8 +55,12 @@ var personalSchema = new Schema({
       ref: "stickyNotes",
     },
   ],
+  startdate: {
+    type: Date,
+    default: Date.now(),
+  },
 
-  duedate: {
+  enddate: {
     type: Date,
   },
 
@@ -75,5 +70,4 @@ var personalSchema = new Schema({
   },
 });
 
-//model takes argument modelname and schema
 module.exports = Personal = mongoose.model("personal", personalSchema);
