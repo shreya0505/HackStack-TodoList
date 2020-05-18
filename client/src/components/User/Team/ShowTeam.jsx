@@ -104,7 +104,7 @@ const ShowTeam = ({
             </IconButton>
           )}
         </h2>
-        {showtform && <TaskForm id={match.params.id} />}
+        {showtform && <TaskForm id={match.params.id} type="team" />}
         {project.task.map((task) => (
           <div
             key={task.id}
@@ -172,7 +172,7 @@ const ShowTeam = ({
             </IconButton>
           )}
         </h2>
-        {showcform && <CheckListForm id={match.params.id} />}
+        {showcform && <CheckListForm id={match.params.id} type="team" />}
         {project.checklist.map((list) => (
           <div
             key={list.id}
@@ -251,7 +251,7 @@ const ShowTeam = ({
             </IconButton>
           )}
         </h2>
-        {shownform && <StickyNotesForm id={match.params.id} />}
+        {shownform && <StickyNotesForm id={match.params.id} type="team" />}
         {project.notes.map((note) => (
           <div
             key={note.id}

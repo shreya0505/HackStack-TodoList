@@ -49,6 +49,7 @@ const initialItemState = {
 
 export const CheckListForm = ({
   id,
+  type,
   personal: { loading, checklist },
   error: { errors },
   getChecklist,
@@ -72,6 +73,7 @@ export const CheckListForm = ({
   const onToggle2 = (e) => {
     setItemData({ ...itemForm, [e.target.name]: !e.target.value });
   };
+
   const onSubmit = async (e) => {
     e.preventDefault();
     const config = {
@@ -94,7 +96,11 @@ export const CheckListForm = ({
     });
 
     try {
-      const res = await axios.post(`/personal/checklist/${id}`, body, config);
+      let res;
+      if (type === "personal")
+        res = await axios.post(`/personal/checklist/${id}`, body, config);
+      if (type === "team")
+        res = await axios.post(`/team/checklist/${id}`, body, config);
       setErrors_nr([]);
       setSuccess(res.data.success);
       setFormData(initialState);
@@ -124,11 +130,12 @@ export const CheckListForm = ({
       status,
     });
     try {
-      const res = await axios.post(
-        `/personal/addlistitem/${cid}`,
-        body,
-        config
-      );
+      let res;
+      if (type === "personal")
+        res = await axios.post(`/personal/addlistitem/${cid}`, body, config);
+      if (type === "team")
+        res = await axios.post(`/team/addlistitem/${cid}`, body, config);
+
       console.log(res.data);
       setErrors_nr([]);
       setSuccess(res.data.success);

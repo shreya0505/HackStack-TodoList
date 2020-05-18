@@ -33,7 +33,7 @@ export const ShowPersonal = ({
     }
     call_async();
   }, [match.params.id, getPersonal]);
-  
+
   const toggleCheck = async (id, cid) => {
     try {
       const res = await axios.put(`/personal/togglelist/${id}/${cid}`);
@@ -103,7 +103,7 @@ export const ShowPersonal = ({
             </IconButton>
           )}
         </h2>
-        {showtform && <TaskForm id={match.params.id} />}
+        {showtform && <TaskForm id={match.params.id} type="personal" />}
         {project.task.map((task) => (
           <div
             key={task.id}
@@ -171,7 +171,7 @@ export const ShowPersonal = ({
             </IconButton>
           )}
         </h2>
-        {showcform && <CheckListForm id={match.params.id} />}
+        {showcform && <CheckListForm id={match.params.id} type="personal" />}
         {project.checklist.map((list) => (
           <div
             key={list.id}
@@ -250,7 +250,7 @@ export const ShowPersonal = ({
             </IconButton>
           )}
         </h2>
-        {shownform && <StickyNotesForm id={match.params.id} />}
+        {shownform && <StickyNotesForm id={match.params.id} type="personal" />}
         {project.notes.map((note) => (
           <div
             key={note.id}
