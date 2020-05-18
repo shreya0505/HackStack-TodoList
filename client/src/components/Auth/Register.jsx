@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { TextField } from "@material-ui/core";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, Redirect } from "react-router-dom";
 
 export const Register = () => {
   const [formData, setFormData] = useState({
@@ -64,16 +64,9 @@ export const Register = () => {
               {error.msg}
             </div>
           ))}
-          {success.map((success_item, index) => (
-            <div key={index} className="text-success text-center">
-              {success_item.msg}
-              <br></br>
-              <Link to="/verify"> Verify Email </Link>
-            </div>
-          ))}
+
           <div style={{ letterSpacing: "3px" }}>
             <form onSubmit={(e) => onSubmit(e)} class="content">
-              
               <TextField
                 variant="outlined"
                 fullWidth
@@ -121,7 +114,7 @@ export const Register = () => {
                 style={{ margin: "10px 5px" }}
                 required
               />
-              
+
               <TextField
                 variant="outlined"
                 fullWidth

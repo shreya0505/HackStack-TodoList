@@ -35,8 +35,8 @@ export const AddPersonal = () => {
         return;
       }
       if (startdate.getTime() === enddate.getTime()) {
-        setStartDate(null)
-        setEndDate(null)
+        setStartDate(null);
+        setEndDate(null);
       }
     }
 

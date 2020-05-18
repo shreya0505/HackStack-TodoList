@@ -182,12 +182,12 @@ router.post(
       enddate,
       statdate,
       listName,
-
       priority,
     } = req.body;
 
     if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
-      return res.status(400).json({ error: [{ msg: "Page not found" }] });
+      return res.status(400).json({ error: [{ msg: "LAlalalalalala" }] });
+      console.log("jeere")
     }
     try {
       const personal = await Personal.findById(req.params.id);
@@ -224,7 +224,7 @@ router.post(
       await personal.save();
       return res
         .status(200)
-        .json({ success: [{ msg: "List added Successfully" }] });
+        .json({ success: [{ msg: "List added Successfully" }], id : list.id  });
     } catch (err) {
       console.error(err.message);
       res.status(500).json({ error: [{ msg: "Server Error" }] });
@@ -232,6 +232,46 @@ router.post(
   }
 );
 
+router.post(
+  "/addlistitem/:id",
+  [check("listitem", "Checklist item can't be blank").notEmpty()],
+  auth,
+  async (req, res) => {
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+      return res.status(400).json({ error: error.array() });
+    }
+    const { listitem, status } = req.body;
+
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ error: [{ msg: "Page not found" }] });
+      
+    }
+    try {
+      const checklist = await Checklist.findById(req.params.id);
+      if (!checklist) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Checklist does not exists" }] });
+      }
+      if (req.user.id !== checklist.owner.toString()) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Not authorized to post" }] });
+      }
+      const newItem = {
+        item:listitem,
+        status,
+      };
+      checklist.listItems.unshift(newItem);
+      await checklist.save();
+      return res.status(200).json({ success: [{ msg: "Item added" }] });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).json({ error: [{ msg: "Server Error" }] });
+    }
+  }
+);
 //READ==================================================================================
 
 router.get("/project/:id", auth, async (req, res) => {
@@ -317,7 +357,7 @@ router.get("/checklist/:id", auth, async (req, res) => {
     return res.status(400).json({ error: [{ msg: "Page not found" }] });
   }
   try {
-    const list = await Checklist.findById(req.params.id);
+    const list = await Checklist.findById(req.params.id).populate("schedule");
     if (!list) {
       return res.status(400).json({ error: [{ msg: "List does not exists" }] });
     }

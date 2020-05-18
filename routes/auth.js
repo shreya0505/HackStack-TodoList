@@ -243,8 +243,20 @@ router.post(
 router.get("/user", auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id)
-      .populate("team")
-      .populate("personal");
+      .populate({
+        path: "team",
+        populate: {
+          path: "team",
+          model: "team",
+        },
+      })
+      .populate({
+        path: "personal",
+        populate: {
+          path: "personal",
+          model: "personal",
+        },
+      });
     if (!user) {
       res.status(400).json({ error: [{ msg: "User not found" }] });
     }

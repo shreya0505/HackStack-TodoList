@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 
 import axios from "axios";
-import { getPersonal } from "../../../actions/personal";
+import { getTeam } from "../../../actions/team";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { connect } from "react-redux";
@@ -16,10 +16,10 @@ import TaskForm from "../Forms/TaskForm";
 import StickyNotesForm from "../Forms/StickyNotesForm";
 import CheckListForm from "../Forms/CheckListForm";
 
-export const ShowPersonal = ({
-  getPersonal,
+const ShowTeam = ({
+  getTeam,
   match,
-  personal: { loading, project },
+  team: { loading, project },
   error: { errors },
 }) => {
   const [errors_nr, setErrors_nr] = useState([]);
@@ -27,20 +27,21 @@ export const ShowPersonal = ({
   const [showtform, setShowtform] = useState(false);
   const [showcform, setShowcform] = useState(false);
   const [shownform, setShownform] = useState(false);
+
   useEffect(() => {
     async function call_async() {
-      await getPersonal(match.params.id);
+      await getTeam(match.params.id);
     }
     call_async();
-  }, [match.params.id, getPersonal]);
-  
+  }, [match.params.id, getTeam]);
+
   const toggleCheck = async (id, cid) => {
     try {
-      const res = await axios.put(`/personal/togglelist/${id}/${cid}`);
-      console.log(res);
+      //const res = await axios.put(`/personal/togglelist/${id}/${cid}`);
+      //console.log(res);
       setErrors_nr([]);
-      setSuccess_nr(res.data.success_nr);
-      await getPersonal(match.params.id);
+      //setSuccess_nr(res.data.success_nr);
+      await getTeam(match.params.id);
     } catch (error) {
       setErrors_nr(error.response.data.error);
     }
@@ -96,7 +97,7 @@ export const ShowPersonal = ({
               onClick={(e) => {
                 setShowtform(!showtform);
                 console.log(showtform);
-                getPersonal(match.params.id);
+                getTeam(match.params.id);
               }}
             >
               <Close color="secondary" />
@@ -164,7 +165,7 @@ export const ShowPersonal = ({
               onClick={(e) => {
                 setShowcform(!showcform);
                 console.log(showcform);
-                getPersonal(match.params.id);
+                getTeam(match.params.id);
               }}
             >
               <Close color="secondary" />
@@ -243,7 +244,7 @@ export const ShowPersonal = ({
               onClick={(e) => {
                 setShownform(!shownform);
                 console.log(shownform);
-                getPersonal(match.params.id);
+                getTeam(match.params.id);
               }}
             >
               <Close color="secondary" />
@@ -274,17 +275,16 @@ export const ShowPersonal = ({
   );
 };
 
-ShowPersonal.propTypes = {
-  auth: PropTypes.object.isRequired,
+ShowTeam.propTypes = {
   error: PropTypes.object.isRequired,
-  personal: PropTypes.object.isRequired,
-  getPersonal: PropTypes.func.isRequired,
+  team: PropTypes.object.isRequired,
+  getTeam: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
   auth: state.auth,
-  personal: state.personal,
+  team: state.team,
   error: state.error,
 });
 
-export default connect(mapStateToProps, { getPersonal })(ShowPersonal);
+export default connect(mapStateToProps, { getTeam })(ShowTeam);

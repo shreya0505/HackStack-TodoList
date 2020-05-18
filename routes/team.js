@@ -77,7 +77,7 @@ router.post(
       });
       user.team.unshift(team.id);
       await user.save();
-      res.json(user);
+      res.json(team.id);
     } catch (err) {
       console.error(err.message);
       res.status(500).json({ error: [{ msg: "Server Error" }] });
@@ -442,7 +442,13 @@ router.get("/project/:id", auth, async (req, res) => {
     const team = await Team.findById(req.params.id)
       .populate("teamMembers", "username id")
       .populate("manager", "username id")
-      .populate("task")
+      .populate({
+        path: "task",
+        populate: {
+          path: "schedule",
+          model: "schedule",
+        },
+      })
       .populate("checklist")
       .populate("notes");
     if (!team) {

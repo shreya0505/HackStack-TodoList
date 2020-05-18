@@ -14,6 +14,8 @@ import PrivateRoute from "./components/PrivateRoute";
 import Dashboard from "./components/User/Dashboard";
 import AddPersonal from "./components/User/Personal/AddPersonal";
 import ShowPersonal from "./components/User/Personal/ShowPersonal";
+import AddTeam from "./components/User/Team/AddTeam";
+import ShowTeam from "./components/User/Team/ShowTeam";
 
 import { Provider } from "react-redux";
 import store from "./store";
@@ -42,10 +44,16 @@ const App = () => {
             <Route exact path="/forgot" component={Forgot} />
             <PrivateRoute exact path="/dashboard" component={Dashboard} />
             <PrivateRoute exact path="/addProject" component={AddPersonal} />
+            <PrivateRoute exact path="/addTeamProject" component={AddTeam} />
             <PrivateRoute
               exact
               path="/viewPersonal/:id"
               component={ShowPersonal}
+            />
+            <PrivateRoute
+              exact
+              path="/viewTeam/:id"
+              component={ShowTeam}
             />
           </Switch>
           <Footer />

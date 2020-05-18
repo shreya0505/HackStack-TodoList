@@ -1,8 +1,9 @@
-import { GET_PERSONAL } from "../actions/types";
+import { GET_PERSONAL, GET_CHECKLIST } from "../actions/types";
 
 const initialState = {
-  loading: true,
   personal: null,
+  loading: true,
+  checklist: null,
 };
 
 export default function (state = initialState, action) {
@@ -14,6 +15,12 @@ export default function (state = initialState, action) {
         ...state,
         loading: false,
         project: payload,
+      };
+    case GET_CHECKLIST:
+      return {
+        ...state,
+        loading: false,
+        checklist: payload,
       };
     default:
       return state;

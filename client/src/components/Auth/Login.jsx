@@ -12,6 +12,7 @@ export const Login = ({
 }) => {
   useEffect(() => {
     if (isAuthenticated) window.location.href = "/dashboard";
+    
   }, [isAuthenticated]);
   const [formData, setFormData] = useState({
     email: "",
