@@ -23,6 +23,7 @@ export const login = ({ email, password }) => async (dispatch) => {
 };
 
 export const loadUser = () => async (dispatch) => {
+ 
   try {
     const res = await axios.get("/auth/user");
 
@@ -31,7 +32,6 @@ export const loadUser = () => async (dispatch) => {
       payload: res.data,
     });
   } catch (err) {
-    console.log(err);
     dispatch({
       type: GET_ERRORS,
       payload: err.response.data.error,

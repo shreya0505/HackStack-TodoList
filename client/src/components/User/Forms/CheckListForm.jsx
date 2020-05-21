@@ -107,7 +107,7 @@ export const CheckListForm = ({
       setcid(res.data.id);
     } catch (error) {
       setErrors_nr(error.response.data.error);
-      console.log(error);
+      
       setSuccess([]);
     }
   };
@@ -136,14 +136,14 @@ export const CheckListForm = ({
       if (type === "team")
         res = await axios.post(`/team/addlistitem/${cid}`, body, config);
 
-      console.log(res.data);
+      
       setErrors_nr([]);
       setSuccess(res.data.success);
       setItemData(initialItemState);
       getChecklist(cid);
     } catch (error) {
       setErrors_nr(error.response.data.error);
-      console.log(error);
+      
       setSuccess([]);
     }
   };

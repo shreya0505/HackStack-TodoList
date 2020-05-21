@@ -37,7 +37,7 @@ export const ShowPersonal = ({
   const toggleCheck = async (id, cid) => {
     try {
       const res = await axios.put(`/personal/togglelist/${id}/${cid}`);
-      console.log(res);
+      
       setErrors_nr([]);
       setSuccess_nr(res.data.success_nr);
       await getPersonal(match.params.id);
@@ -85,7 +85,7 @@ export const ShowPersonal = ({
             <IconButton
               onClick={(e) => {
                 setShowtform(!showtform);
-                console.log(showtform);
+                
               }}
             >
               <Add color="primary" />
@@ -95,7 +95,7 @@ export const ShowPersonal = ({
             <IconButton
               onClick={(e) => {
                 setShowtform(!showtform);
-                console.log(showtform);
+                
                 getPersonal(match.params.id);
               }}
             >
@@ -153,7 +153,7 @@ export const ShowPersonal = ({
             <IconButton
               onClick={(e) => {
                 setShowcform(!showcform);
-                console.log(showcform);
+                
               }}
             >
               <Add color="primary" />
@@ -163,7 +163,7 @@ export const ShowPersonal = ({
             <IconButton
               onClick={(e) => {
                 setShowcform(!showcform);
-                console.log(showcform);
+                
                 getPersonal(match.params.id);
               }}
             >
@@ -232,7 +232,7 @@ export const ShowPersonal = ({
             <IconButton
               onClick={(e) => {
                 setShownform(!shownform);
-                console.log(shownform);
+                
               }}
             >
               <Add color="primary" />
@@ -242,7 +242,7 @@ export const ShowPersonal = ({
             <IconButton
               onClick={(e) => {
                 setShownform(!shownform);
-                console.log(shownform);
+                
                 getPersonal(match.params.id);
               }}
             >

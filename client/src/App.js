@@ -8,6 +8,7 @@ import Login from "./components/Auth/Login";
 import Register from "./components/Auth/Register";
 import Verify from "./components/Auth/Verify";
 import Forgot from "./components/Auth/Forgot";
+import Token from "./components/Auth/Token";
 
 import PrivateRoute from "./components/PrivateRoute";
 
@@ -42,6 +43,7 @@ const App = () => {
             <Route exact path="/login" component={Login} />
             <Route exact path="/verify" component={Verify} />
             <Route exact path="/forgot" component={Forgot} />
+            <Route exact path="/token/:id" component={Token} />
             <PrivateRoute exact path="/dashboard" component={Dashboard} />
             <PrivateRoute exact path="/addProject" component={AddPersonal} />
             <PrivateRoute exact path="/addTeamProject" component={AddTeam} />
@@ -50,11 +52,7 @@ const App = () => {
               path="/viewPersonal/:id"
               component={ShowPersonal}
             />
-            <PrivateRoute
-              exact
-              path="/viewTeam/:id"
-              component={ShowTeam}
-            />
+            <PrivateRoute exact path="/viewTeam/:id" component={ShowTeam} />
           </Switch>
           <Footer />
         </Router>

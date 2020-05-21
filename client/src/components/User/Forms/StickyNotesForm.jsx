@@ -60,7 +60,7 @@ export const StickyNotes = ({ id }) => {
       setFormData(initialState);
     } catch (error) {
       setErrors(error.response.data.error);
-      console.log(error);
+      
     }
   };
 

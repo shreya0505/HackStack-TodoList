@@ -2,5 +2,7 @@
   "mongoURI": "mongodb://localhost:27017",
   "jwtSecret": "secretisout",
   "email": "scottie.fay@ethereal.email",
-  "pass": "eDdEbgbv95RJm5JVE2"
+  "pass": "eDdEbgbv95RJm5JVE2",
+  "google_clientID": "46104210602-fv8ms30du62fldaqv1lgn1i0r7671o5t.apps.googleusercontent.com",
+  "google_clientSecret": "cMats9xUt32Vu7aQ5I0o611s"
 }

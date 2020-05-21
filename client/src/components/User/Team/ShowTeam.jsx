@@ -86,7 +86,7 @@ const ShowTeam = ({
             <IconButton
               onClick={(e) => {
                 setShowtform(!showtform);
-                console.log(showtform);
+                
               }}
             >
               <Add color="primary" />
@@ -96,7 +96,7 @@ const ShowTeam = ({
             <IconButton
               onClick={(e) => {
                 setShowtform(!showtform);
-                console.log(showtform);
+                
                 getTeam(match.params.id);
               }}
             >
@@ -154,7 +154,7 @@ const ShowTeam = ({
             <IconButton
               onClick={(e) => {
                 setShowcform(!showcform);
-                console.log(showcform);
+                
               }}
             >
               <Add color="primary" />
@@ -164,7 +164,7 @@ const ShowTeam = ({
             <IconButton
               onClick={(e) => {
                 setShowcform(!showcform);
-                console.log(showcform);
+                
                 getTeam(match.params.id);
               }}
             >
@@ -233,7 +233,7 @@ const ShowTeam = ({
             <IconButton
               onClick={(e) => {
                 setShownform(!shownform);
-                console.log(shownform);
+                
               }}
             >
               <Add color="primary" />
@@ -243,7 +243,7 @@ const ShowTeam = ({
             <IconButton
               onClick={(e) => {
                 setShownform(!shownform);
-                console.log(shownform);
+                
                 getTeam(match.params.id);
               }}
             >

@@ -9,6 +9,7 @@ const jwt = require("jsonwebtoken");
 const config = require("config");
 const jwtSecret = config.get("jwtSecret");
 const auth = require("../middleware/auth");
+const passport = require("passport");
 
 router.post(
   "/register",
@@ -193,15 +194,10 @@ router.post(
         },
       };
 
-      jwt.sign(
-        payload,
-        config.get("jwtSecret"),
-        { expiresIn: 360000 },
-        (err, token) => {
-          if (err) throw err;
-          res.json({ token });
-        }
-      );
+      jwt.sign(payload, jwtSecret, { expiresIn: 360000 }, (err, token) => {
+        if (err) throw err;
+        res.json({ token });
+      });
     } catch (err) {
       console.error(err.message);
       res.status(500).json({ error: [{ msg: "Server Error" }] });
@@ -266,6 +262,29 @@ router.get("/user", auth, async (req, res) => {
     console.error(err.message);
     res.status(500).json({ error: [{ msg: "Server Error" }] });
   }
+});
+
+// auth with google+
+router.get(
+  "/google",
+  passport.authenticate("google", {
+    scope: ["openid", "profile", "email"],
+  })
+);
+
+router.get("/google/redirect", passport.authenticate("google"), (req, res) => {
+  
+  const payload = {
+    user: {
+      id: req.user.id,
+    },
+  };
+  
+
+  jwt.sign(payload, jwtSecret, { expiresIn: 360000 }, (err, token) => {
+    if (err) throw err;
+    res.redirect("http://localhost:3000/token/" + token);
+  });
 });
 
 module.exports = router;

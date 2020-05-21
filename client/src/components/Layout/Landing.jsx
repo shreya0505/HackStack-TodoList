@@ -1,5 +1,7 @@
 import React from "react";
 import Zoom from "react-reveal/Zoom";
+
+
 const Landing = (props) => {
   return (
     <div className="landing">
@@ -37,6 +39,20 @@ const Landing = (props) => {
                 }}
               >
                 Sign Up
+              </button>
+            </div>
+            <div class="col-sm-12">
+              <button
+                type="button"
+                class="btn btn-primary btn-lg"
+                style={{
+                  marginTop: "30px",
+                  width: "80%",
+                  textAlign: "center",
+                  textDecoration: "none",
+                }}
+              >
+                <a href="http://localhost:5000/auth/google">Google+</a>
               </button>
             </div>
           </div>

@@ -7,6 +7,11 @@ const io = require("socket.io")(server);
 
 connectDB();
 
+const passport = require("passport");
+const passportSetup = require("./config/passport");
+app.use(passport.initialize());
+app.use(passport.session());
+
 //Init Middleware body parser
 app.use(express.json({ extended: false }));
 app.get("/", (req, res) => res.send("API RUNNING"));

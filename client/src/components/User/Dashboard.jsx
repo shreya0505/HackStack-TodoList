@@ -4,7 +4,13 @@ import { Link } from "react-router-dom";
 import { connect } from "react-redux";
 
 const Dashboard = ({ auth: { user } }) => {
-  return <Fragment></Fragment>;
+  return (
+    <Fragment>
+      <div>
+        <h1 className="landing-content"> Dashboard</h1>
+      </div>
+    </Fragment>
+  );
 };
 
 Dashboard.propTypes = {

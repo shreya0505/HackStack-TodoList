@@ -76,7 +76,7 @@ export const TaskForm = ({ id }) => {
       setFormData(initialState);
     } catch (error) {
       setErrors(error.response.data.error);
-      console.log(error);
+      
     }
   };
   return (
