@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { TextField } from "@material-ui/core";
 import axios from "axios";
 import { Link, Redirect } from "react-router-dom";
+import G_logo from "../Images/google.svg";
+import {  PersonAdd } from "@material-ui/icons";
 
 export const Register = () => {
   const [formData, setFormData] = useState({
@@ -128,11 +130,44 @@ export const Register = () => {
               />
 
               <button
-                class="btn btn-dark btn-lg"
-                style={{ letterSpacing: "2px", marginTop: "20px" }}
+                class="btn btn-light btn-lg"
+                style={{
+                  letterSpacing: "2px",
+                  marginTop: "20px",
+                  width: "90%",
+                  fontFamily: "Roboto, sans-serif",
+                  color: "#2c2e2e",
+                  fontWeight: "500",
+                }}
               >
-                REGISTER
+                <PersonAdd />
+                &nbsp;Register
               </button>
+
+              <div class="col-sm-12" style={{ textAlign: "center" }}>
+                <a href="http://localhost:5000/auth/google" style={{}}>
+                  <button
+                    type="button"
+                    class="btn btn-light btn-lg"
+                    style={{
+                      marginTop: "30px",
+                      width: "100%",
+                      textAlign: "center",
+                      fontFamily: "Roboto, sans-serif",
+                      color: "#2c2e2e",
+                      fontWeight: "500",
+                    }}
+                  >
+                    <img
+                      src={G_logo}
+                      alt="Google Logo"
+                      style={{ height: "20px" }}
+                    />
+                    {"  "}
+                    &nbsp; Google
+                  </button>
+                </a>
+              </div>
             </form>
             <p
               style={{

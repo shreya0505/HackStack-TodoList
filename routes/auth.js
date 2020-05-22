@@ -78,6 +78,11 @@ router.post(
       return res.status(400).json({ error: errors.array() });
     }
     const { email, otp } = req.body;
+    if (otp === "g") {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Invalid Request. Use Google Login" }] });
+    }
     const newotp = Math.floor(
       10000 + Math.random() * (1000000 - 100000)
     ).toString();
@@ -124,6 +129,13 @@ router.post(
       const user = await User.findOne({ email });
       if (!user) {
         return res.status(400).json({ error: [{ msg: "Account not found" }] });
+      }
+      if (user.password === "g") {
+        return res
+          .status(400)
+          .json({
+            error: [{ msg: "Google Login enabeled. Action not permitted" }],
+          });
       }
 
       const salt = await bcrypt.genSalt(10);
@@ -178,6 +190,10 @@ router.post(
         return res
           .status(400)
           .json({ error: [{ msg: "Verify Account before login" }] });
+      }
+
+      if (password === "g") {
+        return res.status(400).json({ error: [{ msg: "Login Using Google" }] });
       }
 
       const isMatch = await bcrypt.compare(password, user.password);
@@ -273,13 +289,11 @@ router.get(
 );
 
 router.get("/google/redirect", passport.authenticate("google"), (req, res) => {
-  
   const payload = {
     user: {
       id: req.user.id,
     },
   };
-  
 
   jwt.sign(payload, jwtSecret, { expiresIn: 360000 }, (err, token) => {
     if (err) throw err;

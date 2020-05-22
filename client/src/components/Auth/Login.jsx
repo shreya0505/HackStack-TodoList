@@ -4,6 +4,8 @@ import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { connect } from "react-redux";
 import { login } from "../../actions/auth";
+import G_logo from "../Images/google.svg";
+import { AccountCircle } from "@material-ui/icons";
 
 export const Login = ({
   login,
@@ -12,7 +14,6 @@ export const Login = ({
 }) => {
   useEffect(() => {
     if (isAuthenticated) window.location.href = "/dashboard";
-    
   }, [isAuthenticated]);
   const [formData, setFormData] = useState({
     email: "",
@@ -76,11 +77,43 @@ export const Login = ({
               />
 
               <button
-                class="btn btn-dark btn-lg"
-                style={{ letterSpacing: "2px", marginTop: "20px" }}
+                class="btn btn-light btn-lg"
+                style={{
+                  letterSpacing: "2px",
+                  marginTop: "20px",
+                  fontFamily: "Roboto, sans-serif",
+                  color: "#2c2e2e",
+                  fontWeight: "500",
+                  width:"90%"
+                }}
               >
-                LOGIN
+                <AccountCircle />
+                &nbsp;Login
               </button>
+              <div class="col-sm-12" style={{ textAlign: "center" }}>
+                <a href="http://localhost:5000/auth/google" style={{}}>
+                  <button
+                    type="button"
+                    class="btn btn-light btn-lg"
+                    style={{
+                      marginTop: "30px",
+                      width: "100%",
+                      textAlign: "center",
+                      fontFamily: "Roboto, sans-serif",
+                      color: "#2c2e2e",
+                      fontWeight: "500",
+                    }}
+                  >
+                    <img
+                      src={G_logo}
+                      alt="Google Logo"
+                      style={{ height: "20px" }}
+                    />
+                    {"  "}
+                    &nbsp; Google
+                  </button>
+                </a>
+              </div>
             </form>
             <p
               style={{

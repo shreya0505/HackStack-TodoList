@@ -6,6 +6,10 @@ var teamSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "users",
   },
+  managerName: {
+    type: String,
+    required: true,
+  },
 
   teamJoinCode: {
     type: String,
@@ -32,8 +36,6 @@ var teamSchema = new Schema({
     type: String,
     required: true,
   },
-
-
 
   task: [
     {
@@ -105,7 +107,7 @@ var teamSchema = new Schema({
     },
   ],
 
-  enddate: {
+  duedate: {
     type: Date,
   },
 

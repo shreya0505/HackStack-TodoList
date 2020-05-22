@@ -10,13 +10,17 @@ const Token = ({ match }) => {
     setAuthToken(match.params.id);
     localStorage.setItem("token", match.params.id);
     store.dispatch(loadUser());
-  }, [match.params.id]);
+    if (localStorage.token) window.location.href = "/dashboard";
+  }, [match.params.id, localStorage.token]);
   return localStorage.token ? (
     <div>
       <Redirect to="/dashboard" />
     </div>
   ) : (
-    <h1 className="landing-content"> Loading...</h1>
+    <h1 className="landing-content">
+      {" "}
+      Loading... {localStorage.token && <Redirect to="/dashboard" />}
+    </h1>
   );
 };
 

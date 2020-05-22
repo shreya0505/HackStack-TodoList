@@ -76,7 +76,7 @@ export const Forgot = () => {
               />
 
               <button
-                class="btn btn-dark btn-md"
+                class="btn btn-light btn-md"
                 style={{ letterSpacing: "2px", marginTop: "20px" }}
               >
                 RESET PASSWORD

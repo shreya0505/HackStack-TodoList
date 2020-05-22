@@ -34,7 +34,7 @@ router.post(
 
     const {
       title,
-      enddate,
+      duedate,
       teamName,
       inviteMembers,
       teamJoinCode,
@@ -55,8 +55,9 @@ router.post(
 
       let newTeam = new Team({
         manager: req.user.id,
+        managerName: user.username,
         title,
-        enddate,
+        duedate,
         teamName,
         teamMembers,
         teamJoinCode,
@@ -224,7 +225,7 @@ router.post(
       status,
       priority,
       listItems,
-      enddate,
+      duedate,
     } = req.body;
     if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({ error: [{ msg: "Page not found" }] });
@@ -253,7 +254,7 @@ router.post(
         status,
         priority,
         listItems,
-        enddate,
+        duedate,
       });
 
       const list = await newChecklist.save();

@@ -21,7 +21,7 @@ router.post(
     if (!error.isEmpty()) {
       return res.status(400).json({ error: error.array() });
     }
-    const { title, enddate, description, pinned, label, startdate } = req.body;
+    const { title, description, pinned, label, duedate } = req.body;
 
     try {
       const user = await User.findById(req.user.id).select("-password");
@@ -34,10 +34,9 @@ router.post(
       let newPersonal = new Personal({
         owner: req.user.id,
         title,
-        enddate,
         description,
         label,
-        startdate,
+        duedate,
       });
 
       const personal = await newPersonal.save();
@@ -61,16 +60,7 @@ router.post(
       return res.status(400).json({ error: error.array() });
     }
 
-    const {
-      repeat,
-      daily,
-      weekly,
-      enddate,
-      statdate,
-      taskName,
-      description,
-      priority,
-    } = req.body;
+    const { duedate, taskName, description, priority } = req.body;
 
     if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({ error: [{ msg: "Page not found" }] });
@@ -90,11 +80,7 @@ router.post(
 
       const newSchedule = new Schedule({
         owner: req.user.id,
-        repeat,
-        daily,
-        weekly,
-        enddate,
-        statdate,
+        duedate,
       });
 
       const schedule = await newSchedule.save();
@@ -176,11 +162,7 @@ router.post(
       return res.status(400).json({ error: error.array() });
     }
     const {
-      repeat,
-      daily,
-      weekly,
-      enddate,
-      statdate,
+      duedate,
       listName,
       priority,
     } = req.body;
@@ -203,11 +185,7 @@ router.post(
 
       const newSchedule = new Schedule({
         owner: req.user.id,
-        repeat,
-        daily,
-        weekly,
-        enddate,
-        statdate,
+        duedate,
       });
 
       const schedule = await newSchedule.save();
@@ -223,7 +201,7 @@ router.post(
       await personal.save();
       return res
         .status(200)
-        .json({ success: [{ msg: "List added Successfully" }], id : list.id  });
+        .json({ success: [{ msg: "List added Successfully" }], id: list.id });
     } catch (err) {
       console.error(err.message);
       res.status(500).json({ error: [{ msg: "Server Error" }] });
@@ -244,7 +222,6 @@ router.post(
 
     if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({ error: [{ msg: "Page not found" }] });
-      
     }
     try {
       const checklist = await Checklist.findById(req.params.id);
@@ -259,7 +236,7 @@ router.post(
           .json({ error: [{ msg: "Not authorized to post" }] });
       }
       const newItem = {
-        item:listitem,
+        item: listitem,
         status,
       };
       checklist.listItems.unshift(newItem);

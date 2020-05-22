@@ -14,8 +14,7 @@ export const AddTeam = () => {
     teamName: "",
   });
   const [inviteMembers, setInviteMembers] = useState([]);
-  const [startdate, setStartDate] = useState(null);
-  const [enddate, setEndDate] = useState(null);
+  const [duedate, setDueDate] = useState(null);
   const { title, purpose, label, teamJoinCode, member, teamName } = formData;
 
   const [errors, setErrors] = useState([]);
@@ -40,17 +39,7 @@ export const AddTeam = () => {
       },
     };
 
-    if (startdate && enddate) {
-      if (startdate.getTime() > enddate.getTime()) {
-        setErrors([{ msg: "Start date must occur before end date" }]);
-        return;
-      }
-      if (startdate.getTime() === enddate.getTime()) {
-        setStartDate(null);
-        setEndDate(null);
-      }
-    }
-
+ 
     const body = JSON.stringify({
       title,
       purpose,
@@ -117,7 +106,7 @@ export const AddTeam = () => {
                   Purpose of the project :
                 </h5>
                 <TextareaAutosize
-                  rowsMin={6}
+                  rowsMin={2}
                   style={{
                     width: "100%",
                     padding: "1% 1%",
@@ -177,31 +166,11 @@ export const AddTeam = () => {
                 style={{ margin: "10px 5px" }}
               />
 
-              <div style={{ margin: "30px 5px" }}>
-                <h5 style={{ textAlign: "left", letterSpacing: "2px" }}>
-                  Start Date
-                </h5>
-                <h5
-                  style={{
-                    textAlign: "left",
-                    fontFamily: "monospace",
-                  }}
-                >
-                  <DatePicker
-                    selected={startdate}
-                    onChange={(date) => setStartDate(date)}
-                    showTimeSelect
-                    timeFormat="HH:mm"
-                    timeIntervals={15}
-                    timeCaption="time"
-                    dateFormat="MMMM d, yyyy h:mm aa"
-                  />
-                </h5>
-              </div>
+             
 
               <div style={{ margin: "40px 5px" }}>
                 <h5 style={{ textAlign: "left", letterSpacing: "2px" }}>
-                  End Date
+                  Due Date
                 </h5>
                 <h5
                   style={{
@@ -210,8 +179,8 @@ export const AddTeam = () => {
                   }}
                 >
                   <DatePicker
-                    selected={enddate}
-                    onChange={(date) => setEndDate(date)}
+                    selected={duedate}
+                    onChange={(date) => setDueDate(date)}
                     showTimeSelect
                     timeFormat="HH:mm"
                     timeIntervals={15}
@@ -222,8 +191,8 @@ export const AddTeam = () => {
               </div>
 
               <button
-                class="btn btn-dark btn-lg"
-                style={{ letterSpacing: "2px", marginTop: "20px" }}
+                class="btn btn-light btn-lg"
+                style={{ letterSpacing: "2px", marginTop: "20px", width:"100%" }}
               >
                 CREATE
               </button>

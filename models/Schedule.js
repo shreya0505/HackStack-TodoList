@@ -6,27 +6,8 @@ var scheduleSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "users",
   },
-  repeat: {
-    type: Boolean,
-    default: false,
-  },
 
-  daily: {
-    type: Boolean,
-    default: false,
-  },
-
-  weekly: [
-    {
-      type: String,
-    },
-  ],
-
-  startdate: {
-    type: Date,
-    default: Date.now(),
-  },
-  enddate: {
+  duedate: {
     type: Date,
   },
 });

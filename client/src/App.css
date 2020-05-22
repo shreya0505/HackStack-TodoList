@@ -47,6 +47,7 @@ nav {
   align-items: center;
   padding: 10px 20px 10px 6px;
   background: #232326;
+  z-index: 100;
 }
 
 .logo {
@@ -93,7 +94,7 @@ nav {
 @media screen and (max-width: 540px) {
   .maincontent {
     width: 100%;
-    margin: 10px auto;
+    margin: 100px auto;
     padding: 20px;
   }
 }

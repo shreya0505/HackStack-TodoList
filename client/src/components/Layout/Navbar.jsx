@@ -7,7 +7,7 @@ import { logout } from "../../actions/auth";
 export const Navbar = ({ logout, auth: { isAuthenticated } }) => {
   return (
     <div>
-      <nav style={{height:"10vh"}}>
+      <nav style={{ height: "10vh" }}>
         <span style={{ margin: "5px 15px" }}>
           <Link to="/" style={{ textDecoration: "none" }}>
             <span
@@ -19,7 +19,7 @@ export const Navbar = ({ logout, auth: { isAuthenticated } }) => {
                 marginLeft: "10px",
               }}
             >
-              TODOMO
+              TODOMOR
             </span>
           </Link>
         </span>

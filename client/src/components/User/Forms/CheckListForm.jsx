@@ -36,9 +36,6 @@ const priorities = [
 ];
 
 const initialState = {
-  repeat: false,
-  daily: false,
-  weekly: [],
   listName: "",
   priority: 0,
 };
@@ -57,9 +54,8 @@ export const CheckListForm = ({
   const [errors_nr, setErrors_nr] = useState([]);
   const [success, setSuccess] = useState([]);
   const [formData, setFormData] = useState(initialState);
-  const { repeat, daily, weekly, listName, priority } = formData;
-  const [startdate, setStartDate] = useState(new Date());
-  const [enddate, setEndDate] = useState(new Date());
+  const {  listName, priority } = formData;
+  const [duedate, setDueDate] = useState(new Date());
   const [cid, setcid] = useState(null);
   const [itemForm, setItemData] = useState(initialItemState);
   const { status, listitem } = itemForm;
@@ -81,16 +77,9 @@ export const CheckListForm = ({
         "Content-Type": "application/json",
       },
     };
-    if (startdate && enddate) {
-      if (startdate.getTime() > enddate.getTime()) {
-        setErrors_nr([{ msg: "Start date must occur before end date" }]);
-        return;
-      }
-    }
+    
     const body = JSON.stringify({
-      repeat,
-      daily,
-      weekly,
+      duedate,
       listName,
       priority,
     });
@@ -107,7 +96,7 @@ export const CheckListForm = ({
       setcid(res.data.id);
     } catch (error) {
       setErrors_nr(error.response.data.error);
-      
+
       setSuccess([]);
     }
   };
@@ -119,15 +108,11 @@ export const CheckListForm = ({
         "Content-Type": "application/json",
       },
     };
-    if (startdate && enddate) {
-      if (startdate.getTime() > enddate.getTime()) {
-        setErrors_nr([{ msg: "Start date must occur before end date" }]);
-        return;
-      }
-    }
+  
     const body = JSON.stringify({
       listitem,
       status,
+      duedate
     });
     try {
       let res;
@@ -136,14 +121,13 @@ export const CheckListForm = ({
       if (type === "team")
         res = await axios.post(`/team/addlistitem/${cid}`, body, config);
 
-      
       setErrors_nr([]);
       setSuccess(res.data.success);
       setItemData(initialItemState);
       getChecklist(cid);
     } catch (error) {
       setErrors_nr(error.response.data.error);
-      
+
       setSuccess([]);
     }
   };
@@ -209,7 +193,7 @@ export const CheckListForm = ({
             />
             <div>
               <button
-                class="btn btn-dark btn-lg"
+                class="btn btn-light btn-lg"
                 style={{ letterSpacing: "2px", marginTop: "20px" }}
               >
                 Add Item
@@ -233,25 +217,15 @@ export const CheckListForm = ({
               {" "}
               PREVIEW: {checklist.listName}
             </h3>
-            <p>
-              {" "}
-              {checklist.schedule.repeat && checklist.schedule.daily && (
-                <span class="badge badge-secondary">daily</span>
-              )}
-            </p>
+            
             <div style={{ letterSpacing: "2px", fontFamily: "monospace" }}>
               <b>Date: {"  "}</b>
               <Moment
                 format="DD/MM/YY HH:mm"
-                date={checklist.schedule.startdate}
+                date={checklist.schedule.duedate}
                 className="text-success"
               />
-              {"    "}to {"    "}
-              <Moment
-                format="DD/MM/YY HH:mm"
-                date={checklist.schedule.enddate}
-                className="text-danger"
-              />
+             
             </div>
             {checklist.listItems.map((item) => (
               <div key={item.id}>
@@ -323,27 +297,6 @@ export const CheckListForm = ({
               ))}
             </TextField>
           </div>
-          <div style={{ margin: "30px 5px" }}>
-            <h5 style={{ textAlign: "left", letterSpacing: "2px" }}>
-              Start Date :
-            </h5>
-            <h5
-              style={{
-                textAlign: "left",
-                fontFamily: "monospace",
-              }}
-            >
-              <DatePicker
-                selected={startdate}
-                onChange={(date) => setStartDate(date)}
-                showTimeSelect
-                timeFormat="HH:mm"
-                timeIntervals={15}
-                timeCaption="time"
-                dateFormat="MMMM d, yyyy h:mm aa"
-              />
-            </h5>
-          </div>
 
           <div style={{ margin: "40px 5px" }}>
             <h5 style={{ textAlign: "left", letterSpacing: "2px" }}>
@@ -356,8 +309,8 @@ export const CheckListForm = ({
               }}
             >
               <DatePicker
-                selected={enddate}
-                onChange={(date) => setEndDate(date)}
+                selected={duedate}
+                onChange={(date) => setDueDate(date)}
                 showTimeSelect
                 timeFormat="HH:mm"
                 timeIntervals={15}
@@ -367,7 +320,7 @@ export const CheckListForm = ({
             </h5>
           </div>
           <button
-            class="btn btn-dark btn-lg"
+            class="btn btn-light btn-lg"
             style={{ letterSpacing: "2px", marginTop: "20px" }}
           >
             CREATE

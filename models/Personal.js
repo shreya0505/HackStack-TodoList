@@ -55,12 +55,7 @@ var personalSchema = new Schema({
       ref: "stickyNotes",
     },
   ],
-  startdate: {
-    type: Date,
-    default: Date.now(),
-  },
-
-  enddate: {
+  duedate: {
     type: Date,
   },
 

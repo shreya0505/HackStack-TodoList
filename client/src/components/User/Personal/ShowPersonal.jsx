@@ -8,7 +8,7 @@ import { connect } from "react-redux";
 
 import Moment from "react-moment";
 import { Checkbox, FormControlLabel, IconButton } from "@material-ui/core";
-import { Add, Close } from "@material-ui/icons";
+import { Add, Close , ArrowBackIos} from "@material-ui/icons";
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
 
@@ -68,11 +68,10 @@ export const ShowPersonal = ({
               marginBottom: "30px",
             }}
           >
-            <h1> {project.title}</h1>
+            <h1> <Link to="/dashboard"><ArrowBackIos/></Link> {project.title}</h1>
             <p> {project.description}</p>
-            <Moment format="DD/MM/YY HH:mm" date={project.startdate} />
-            {"    "}to {"    "}
-            <Moment format="DD/MM/YY HH:mm" date={project.enddate} />
+           
+            <Moment format="DD/MM/YY HH:mm" date={project.duedate} />
           </div>
         </div>
       </div>
@@ -129,15 +128,10 @@ export const ShowPersonal = ({
 
             <div style={{ letterSpacing: "2px", fontFamily: "monospace" }}>
               <b>Date: {"  "}</b>
+              
               <Moment
                 format="DD/MM/YY HH:mm"
-                date={project.startdate}
-                className="text-success"
-              />
-              {"    "}to {"    "}
-              <Moment
-                format="DD/MM/YY HH:mm"
-                date={project.enddate}
+                date={task.schedule.duedate}
                 className="text-danger"
               />
             </div>
@@ -186,23 +180,13 @@ export const ShowPersonal = ({
             }}
           >
             <h3>{list.listName}</h3>
-            <p>
-              {" "}
-              {list.schedule.repeat && list.schedule.daily && (
-                <span class="badge badge-secondary">daily</span>
-              )}
-            </p>
+            
             <div style={{ letterSpacing: "2px", fontFamily: "monospace" }}>
               <b>Date: {"  "}</b>
+             
               <Moment
                 format="DD/MM/YY HH:mm"
-                date={project.startdate}
-                className="text-success"
-              />
-              {"    "}to {"    "}
-              <Moment
-                format="DD/MM/YY HH:mm"
-                date={project.enddate}
+                date={list.schedule.duedate}
                 className="text-danger"
               />
             </div>

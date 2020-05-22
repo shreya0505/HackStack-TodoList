@@ -36,8 +36,7 @@ export const TaskForm = ({ id }) => {
   const [success, setSuccess] = useState([]);
   const [formData, setFormData] = useState(initialState);
   const { repeat, daily, weekly, taskName, description, priority } = formData;
-    const [startdate, setStartDate] = useState(new Date());
-    const [enddate, setEndDate] = useState(new Date());
+  const [duedate, setDueDate] = useState(new Date());
   const onChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -53,20 +52,13 @@ export const TaskForm = ({ id }) => {
       },
     };
 
-    if (startdate && enddate) {
-      if (startdate.getTime() > enddate.getTime()) {
-        setErrors([{ msg: "Start date must occur before end date" }]);
-        return;
-      }
-    }
+  
 
     const body = JSON.stringify({
-      repeat,
-      daily,
-      weekly,
       taskName,
       description,
       priority,
+      duedate
     });
 
     try {
@@ -76,7 +68,6 @@ export const TaskForm = ({ id }) => {
       setFormData(initialState);
     } catch (error) {
       setErrors(error.response.data.error);
-      
     }
   };
   return (
@@ -150,31 +141,11 @@ export const TaskForm = ({ id }) => {
               ))}
             </TextField>
           </div>
-          <div style={{ margin: "30px 5px" }}>
-            <h5 style={{ textAlign: "left", letterSpacing: "2px" }}>
-              Start Date :
-            </h5>
-            <h5
-              style={{
-                textAlign: "left",
-                fontFamily: "monospace",
-              }}
-            >
-              <DatePicker
-                selected={startdate}
-                onChange={(date) => setStartDate(date)}
-                showTimeSelect
-                timeFormat="HH:mm"
-                timeIntervals={15}
-                timeCaption="time"
-                dateFormat="MMMM d, yyyy h:mm aa"
-              />
-            </h5>
-          </div>
+       
 
           <div style={{ margin: "40px 5px" }}>
             <h5 style={{ textAlign: "left", letterSpacing: "2px" }}>
-              End Date :
+              Due Date :
             </h5>
             <h5
               style={{
@@ -183,8 +154,8 @@ export const TaskForm = ({ id }) => {
               }}
             >
               <DatePicker
-                selected={enddate}
-                onChange={(date) => setEndDate(date)}
+                selected={duedate}
+                onChange={(date) => setDueDate(date)}
                 showTimeSelect
                 timeFormat="HH:mm"
                 timeIntervals={15}
@@ -194,7 +165,7 @@ export const TaskForm = ({ id }) => {
             </h5>
           </div>
           <button
-            class="btn btn-dark btn-lg"
+            class="btn btn-light btn-lg"
             style={{ letterSpacing: "2px", marginTop: "20px" }}
           >
             CREATE

@@ -8,7 +8,7 @@ import { connect } from "react-redux";
 
 import Moment from "react-moment";
 import { Checkbox, FormControlLabel, IconButton } from "@material-ui/core";
-import { Add, Close } from "@material-ui/icons";
+import { Add, Close, ArrowBackIos } from "@material-ui/icons";
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
 
@@ -69,11 +69,9 @@ const ShowTeam = ({
               marginBottom: "30px",
             }}
           >
-            <h1> {project.title}</h1>
+            <h1> <Link to="/dashboard"><ArrowBackIos/></Link>{project.title}</h1>
             <p> {project.description}</p>
-            <Moment format="DD/MM/YY HH:mm" date={project.startdate} />
-            {"    "}to {"    "}
-            <Moment format="DD/MM/YY HH:mm" date={project.enddate} />
+            <Moment format="DD/MM/YY HH:mm" date={project.duedate} />
           </div>
         </div>
       </div>
@@ -86,7 +84,6 @@ const ShowTeam = ({
             <IconButton
               onClick={(e) => {
                 setShowtform(!showtform);
-                
               }}
             >
               <Add color="primary" />
@@ -96,7 +93,7 @@ const ShowTeam = ({
             <IconButton
               onClick={(e) => {
                 setShowtform(!showtform);
-                
+
                 getTeam(match.params.id);
               }}
             >
@@ -121,9 +118,7 @@ const ShowTeam = ({
             <h3>{task.taskName} </h3>
             <p>
               {" "}
-              {task.schedule.repeat && task.schedule.daily && (
-                <span class="badge badge-secondary">daily</span>
-              )}
+              
             </p>
 
             <p> {task.description}</p>
@@ -132,15 +127,10 @@ const ShowTeam = ({
               <b>Date: {"  "}</b>
               <Moment
                 format="DD/MM/YY HH:mm"
-                date={project.startdate}
+                date={task.schedule.duedate}
                 className="text-success"
               />
-              {"    "}to {"    "}
-              <Moment
-                format="DD/MM/YY HH:mm"
-                date={project.enddate}
-                className="text-danger"
-              />
+              
             </div>
           </div>
         ))}
@@ -154,7 +144,6 @@ const ShowTeam = ({
             <IconButton
               onClick={(e) => {
                 setShowcform(!showcform);
-                
               }}
             >
               <Add color="primary" />
@@ -164,7 +153,7 @@ const ShowTeam = ({
             <IconButton
               onClick={(e) => {
                 setShowcform(!showcform);
-                
+
                 getTeam(match.params.id);
               }}
             >
@@ -187,25 +176,15 @@ const ShowTeam = ({
             }}
           >
             <h3>{list.listName}</h3>
-            <p>
-              {" "}
-              {list.schedule.repeat && list.schedule.daily && (
-                <span class="badge badge-secondary">daily</span>
-              )}
-            </p>
+            
             <div style={{ letterSpacing: "2px", fontFamily: "monospace" }}>
               <b>Date: {"  "}</b>
               <Moment
                 format="DD/MM/YY HH:mm"
-                date={project.startdate}
+                date={list.schedule.duedate}
                 className="text-success"
               />
-              {"    "}to {"    "}
-              <Moment
-                format="DD/MM/YY HH:mm"
-                date={project.enddate}
-                className="text-danger"
-              />
+             
             </div>
             {list.listItems.map((item) => (
               <div key={item.id}>
@@ -233,7 +212,6 @@ const ShowTeam = ({
             <IconButton
               onClick={(e) => {
                 setShownform(!shownform);
-                
               }}
             >
               <Add color="primary" />
@@ -243,7 +221,7 @@ const ShowTeam = ({
             <IconButton
               onClick={(e) => {
                 setShownform(!shownform);
-                
+
                 getTeam(match.params.id);
               }}
             >

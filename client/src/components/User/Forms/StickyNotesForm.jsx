@@ -60,7 +60,6 @@ export const StickyNotes = ({ id }) => {
       setFormData(initialState);
     } catch (error) {
       setErrors(error.response.data.error);
-      
     }
   };
 
@@ -104,11 +103,11 @@ export const StickyNotes = ({ id }) => {
             style={{ margin: "10px 5px", background: "#FFFF88" }}
             required
           />
-         
-                  <div style={{ margin: "20px 5px" }}>
-                      <h5 style={{ textAlign: "left", letterSpacing: "2px" }}>
-                          Quick Note
-          </h5>
+
+          <div style={{ margin: "20px 5px" }}>
+            <h5 style={{ textAlign: "left", letterSpacing: "2px" }}>
+              Quick Note
+            </h5>
             <TextareaAutosize
               rowsMin={2}
               style={{
@@ -141,7 +140,7 @@ export const StickyNotes = ({ id }) => {
             </TextField>
           </div>
           <button
-            class="btn btn-dark btn-lg"
+            class="btn btn-light btn-lg"
             style={{ letterSpacing: "2px", marginTop: "20px" }}
           >
             CREATE
