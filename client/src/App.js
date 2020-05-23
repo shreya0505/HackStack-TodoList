@@ -17,6 +17,7 @@ import AddPersonal from "./components/User/Personal/AddPersonal";
 import ShowPersonal from "./components/User/Personal/ShowPersonal";
 import AddTeam from "./components/User/Team/AddTeam";
 import ShowTeam from "./components/User/Team/ShowTeam";
+import AcitivityLogs from "./components/User/Team/AcitivityLogs";
 
 import { Provider } from "react-redux";
 import store from "./store";
@@ -53,6 +54,11 @@ const App = () => {
               component={ShowPersonal}
             />
             <PrivateRoute exact path="/viewTeam/:id" component={ShowTeam} />
+            <PrivateRoute
+              exact
+              path="/activity/:id"
+              component={AcitivityLogs}
+            />
           </Switch>
           <Footer />
         </Router>

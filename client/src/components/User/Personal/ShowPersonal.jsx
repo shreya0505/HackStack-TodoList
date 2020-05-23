@@ -8,7 +8,7 @@ import { connect } from "react-redux";
 
 import Moment from "react-moment";
 import { Checkbox, FormControlLabel, IconButton } from "@material-ui/core";
-import { Add, Close , ArrowBackIos} from "@material-ui/icons";
+import { Add, Close, ArrowBackIos } from "@material-ui/icons";
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
 
@@ -37,7 +37,7 @@ export const ShowPersonal = ({
   const toggleCheck = async (id, cid) => {
     try {
       const res = await axios.put(`/personal/togglelist/${id}/${cid}`);
-      
+
       setErrors_nr([]);
       setSuccess_nr(res.data.success_nr);
       await getPersonal(match.params.id);
@@ -68,10 +68,15 @@ export const ShowPersonal = ({
               marginBottom: "30px",
             }}
           >
-            <h1> <Link to="/dashboard"><ArrowBackIos/></Link> {project.title}</h1>
+            <h1>
+              {" "}
+              <Link to="/dashboard">
+                <ArrowBackIos />
+              </Link>{" "}
+              {project.title}
+              </h1>
+              
             <p> {project.description}</p>
-           
-            <Moment format="DD/MM/YY HH:mm" date={project.duedate} />
           </div>
         </div>
       </div>
@@ -84,7 +89,6 @@ export const ShowPersonal = ({
             <IconButton
               onClick={(e) => {
                 setShowtform(!showtform);
-                
               }}
             >
               <Add color="primary" />
@@ -94,7 +98,7 @@ export const ShowPersonal = ({
             <IconButton
               onClick={(e) => {
                 setShowtform(!showtform);
-                
+
                 getPersonal(match.params.id);
               }}
             >
@@ -128,7 +132,7 @@ export const ShowPersonal = ({
 
             <div style={{ letterSpacing: "2px", fontFamily: "monospace" }}>
               <b>Date: {"  "}</b>
-              
+
               <Moment
                 format="DD/MM/YY HH:mm"
                 date={task.schedule.duedate}
@@ -147,7 +151,6 @@ export const ShowPersonal = ({
             <IconButton
               onClick={(e) => {
                 setShowcform(!showcform);
-                
               }}
             >
               <Add color="primary" />
@@ -157,7 +160,7 @@ export const ShowPersonal = ({
             <IconButton
               onClick={(e) => {
                 setShowcform(!showcform);
-                
+
                 getPersonal(match.params.id);
               }}
             >
@@ -180,10 +183,10 @@ export const ShowPersonal = ({
             }}
           >
             <h3>{list.listName}</h3>
-            
+
             <div style={{ letterSpacing: "2px", fontFamily: "monospace" }}>
               <b>Date: {"  "}</b>
-             
+
               <Moment
                 format="DD/MM/YY HH:mm"
                 date={list.schedule.duedate}
@@ -216,7 +219,6 @@ export const ShowPersonal = ({
             <IconButton
               onClick={(e) => {
                 setShownform(!shownform);
-                
               }}
             >
               <Add color="primary" />
@@ -226,7 +228,7 @@ export const ShowPersonal = ({
             <IconButton
               onClick={(e) => {
                 setShownform(!shownform);
-                
+
                 getPersonal(match.params.id);
               }}
             >

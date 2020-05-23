@@ -326,7 +326,7 @@ router.put("/togglelist/:id/:cid", auth, async (req, res) => {
     if (!list) {
       return res.status(400).json({ error: [{ msg: "List does not exists" }] });
     }
-    
+
     // Handle Auth to Edit
 
     const item = list.listItems.find((item) => item.id === req.params.cid);
@@ -530,6 +530,34 @@ router.get("/project/:id", auth, async (req, res) => {
     }
 
     res.json(team);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: [{ msg: "Server Error" }] });
+  }
+});
+
+router.get("/activity/:id", auth, async (req, res) => {
+  if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+  try {
+    const team = await Team.findById(req.params.id);
+    if (!team) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Project does not exists" }] });
+    }
+
+    for (let i = 0; i < team.teamMembers.length; i++) {
+      str = team.teamMembers[i].toString();
+      if (str.localeCompare(req.user.id)) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Not authorizied to view" }] });
+      }
+    }
+
+    res.json(team.activityLog);
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: [{ msg: "Server Error" }] });

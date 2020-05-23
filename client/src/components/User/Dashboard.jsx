@@ -12,6 +12,8 @@ import {
   AssignmentTurnedIn,
   Add,
   PersonPin,
+  LibraryBooksOutlined,
+  GroupAdd,
 } from "@material-ui/icons";
 import { IconButton } from "@material-ui/core";
 
@@ -35,7 +37,7 @@ const Dashboard = ({ auth: { user, loading } }) => {
               }}
               className="col-lg-6 col-md-12"
             >
-              <h4>Add Projects</h4>
+              <h4>Actions</h4>
               <button
                 onClick={() => (window.location.href = "/addProject")}
                 class="btn btn-light btn-lg"
@@ -69,6 +71,21 @@ const Dashboard = ({ auth: { user, loading } }) => {
                 <span class="badge badge-info badge-small">
                   {user.team.length}
                 </span>
+              </button>
+              <button
+                onClick={() => (window.location.href = "/addProject")}
+                class="btn btn-light btn-lg"
+                style={{
+                  letterSpacing: "2px",
+                  marginTop: "20px",
+                  width: "90%",
+                  fontFamily: "Roboto, sans-serif",
+                  color: "#2c2e2e",
+                  fontWeight: "400",
+                }}
+              >
+                <GroupAdd />
+                &nbsp;&nbsp;Join Team&nbsp;{" "}
               </button>
             </div>
 
@@ -243,7 +260,6 @@ const Dashboard = ({ auth: { user, loading } }) => {
                     >
                       <h4>{team.title}</h4>
                       <div style={{ textAlign: "center" }}>
-                        
                         <button
                           class="btn btn-light btn-lg"
                           style={{
@@ -285,6 +301,27 @@ const Dashboard = ({ auth: { user, loading } }) => {
                             style={{ float: "right" }}
                           >
                             {team.teamMembers.length}
+                          </span>
+                        </button>
+                        <button
+                          class="btn btn-light btn-lg"
+                          style={{
+                            letterSpacing: "2px",
+                            marginTop: "20px",
+                            width: "100%",
+                            fontFamily: "Roboto, sans-serif",
+                            color: "#2c2e2e",
+                            fontWeight: "400",
+                            textAlign: "left",
+                          }}
+                        >
+                          <LibraryBooksOutlined />
+                          &nbsp;&nbsp;Activity Logs
+                          <span
+                            class="badge badge-info"
+                            style={{ float: "right" }}
+                          >
+                            {team.activityLog.length}
                           </span>
                         </button>
                         <button

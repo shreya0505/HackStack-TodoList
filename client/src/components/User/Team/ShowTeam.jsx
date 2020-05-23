@@ -8,7 +8,16 @@ import { connect } from "react-redux";
 
 import Moment from "react-moment";
 import { Checkbox, FormControlLabel, IconButton } from "@material-ui/core";
-import { Add, Close, ArrowBackIos } from "@material-ui/icons";
+import {
+  Add,
+  Close,
+  ArrowBackIos,
+  Event,
+  ImportExport,
+  GroupAdd,
+  ContactsOutlined,
+  LibraryBooksOutlined,
+} from "@material-ui/icons";
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
 
@@ -21,6 +30,7 @@ const ShowTeam = ({
   match,
   team: { loading, project },
   error: { errors },
+  auth: { user },
 }) => {
   const [errors_nr, setErrors_nr] = useState([]);
   const [success_nr, setSuccess_nr] = useState([]);
@@ -68,9 +78,134 @@ const ShowTeam = ({
               marginBottom: "30px",
             }}
           >
-            <h1> <Link to="/dashboard"><ArrowBackIos/></Link>{project.title}</h1>
-            <p> {project.description}</p>
-            <Moment format="DD/MM/YY HH:mm" date={project.duedate} />
+            <h1>
+              {" "}
+              <Link to="/dashboard">
+                <ArrowBackIos />
+              </Link>
+              {project.title}
+            </h1>
+            <p>{project.purpose}</p>
+            <p>
+              {" "}
+              {project.teamMembers.map((member) => (
+                <div key={member._id} className="text-muted text-center">
+                  {member.username}&nbsp;
+                </div>
+              ))}
+            </p>
+          </div>
+          <div className="container">
+            <div className="row">
+              <div
+                style={{
+                  textAlign: "center",
+                  marginTop: "50px",
+                  marginBottom: "50px",
+                }}
+                className="col-lg-6 col-md-12"
+              >
+                <h4>Project Controls</h4>
+
+                {user._id === project.manager._id && (
+                  <button
+                    onClick={() => (window.location.href = "/addProject")}
+                    class="btn btn-light btn-lg"
+                    style={{
+                      letterSpacing: "2px",
+                      marginTop: "20px",
+                      width: "90%",
+                      fontFamily: "Roboto, sans-serif",
+                      color: "#2c2e2e",
+                      fontWeight: "400",
+                    }}
+                  >
+                    <GroupAdd />
+                    &nbsp;&nbsp;Add Members&nbsp;{" "}
+                    <span class="badge badge-info" style={{ float: "right" }}>
+                      {project.teamMembers.length}
+                    </span>
+                  </button>
+                )}
+                {user._id !== project.manager._id && (
+                  <button
+                    onClick={() => (window.location.href = "/addProject")}
+                    class="btn btn-light btn-lg"
+                    style={{
+                      letterSpacing: "2px",
+                      marginTop: "20px",
+                      width: "90%",
+                      fontFamily: "Roboto, sans-serif",
+                      color: "#2c2e2e",
+                      fontWeight: "400",
+                    }}
+                  >
+                    <ContactsOutlined />
+                    &nbsp;&nbsp;View Members&nbsp;{" "}
+                    <span class="badge badge-info" style={{ float: "right" }}>
+                      {project.teamMembers.length}
+                    </span>
+                  </button>
+                )}
+                <button
+                  onClick={() => (window.location.href = `/activity/${project._id}`)}
+                  class="btn btn-light btn-lg"
+                  style={{
+                    letterSpacing: "2px",
+                    marginTop: "20px",
+                    width: "90%",
+                    fontFamily: "Roboto, sans-serif",
+                    color: "#2c2e2e",
+                    fontWeight: "400",
+                  }}
+                >
+                  <LibraryBooksOutlined />
+                  &nbsp; View Logs &nbsp;
+                  <span class="badge badge-info" style={{ float: "right" }}>
+                    {project.activityLog.length}
+                  </span>
+                </button>
+              </div>
+
+              <div
+                style={{
+                  textAlign: "center",
+                  marginTop: "50px",
+                  marginBottom: "50px",
+                }}
+                className="col-lg-6 col-md-12"
+              >
+                <h4>Filter </h4>
+                <button
+                  class="btn btn-light btn-lg"
+                  style={{
+                    letterSpacing: "2px",
+                    marginTop: "20px",
+                    width: "90%",
+                    fontFamily: "Roboto, sans-serif",
+                    color: "#2c2e2e",
+                    fontWeight: "400",
+                  }}
+                >
+                  <ImportExport />
+                  &nbsp;&nbsp;Priority&nbsp;{" "}
+                </button>
+                <button
+                  class="btn btn-light btn-lg"
+                  style={{
+                    letterSpacing: "2px",
+                    marginTop: "20px",
+                    width: "90%",
+                    fontFamily: "Roboto, sans-serif",
+                    color: "#2c2e2e",
+                    fontWeight: "400",
+                  }}
+                >
+                  <Event />
+                  &nbsp; Due Date &nbsp;
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -115,10 +250,7 @@ const ShowTeam = ({
             }}
           >
             <h3>{task.taskName} </h3>
-            <p>
-              {" "}
-              
-            </p>
+            <p> </p>
 
             <p> {task.description}</p>
 
@@ -129,7 +261,6 @@ const ShowTeam = ({
                 date={task.schedule.duedate}
                 className="text-success"
               />
-              
             </div>
           </div>
         ))}
@@ -175,7 +306,7 @@ const ShowTeam = ({
             }}
           >
             <h3>{list.listName}</h3>
-            
+
             <div style={{ letterSpacing: "2px", fontFamily: "monospace" }}>
               <b>Date: {"  "}</b>
               <Moment
@@ -183,7 +314,6 @@ const ShowTeam = ({
                 date={list.schedule.duedate}
                 className="text-success"
               />
-             
             </div>
             {list.listItems.map((item) => (
               <div key={item.id}>
@@ -255,6 +385,7 @@ const ShowTeam = ({
 ShowTeam.propTypes = {
   error: PropTypes.object.isRequired,
   team: PropTypes.object.isRequired,
+  auth: PropTypes.object.isRequired,
   getTeam: PropTypes.func.isRequired,
 };
 

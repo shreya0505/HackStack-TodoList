@@ -9,3 +9,4 @@ export const GET_PERSONAL = "GET_PERSONAL";
 export const GET_CHECKLIST = "GET_CHECKLIST";
 
 export const GET_TEAM = "GET_TEAM";
+export const GET_ACTIVITY = "GET_ACTIVITY";
