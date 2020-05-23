@@ -76,10 +76,11 @@ const AcitivityLogs = ({
 }) => {
   useEffect(() => {
     getActivity(match.params.id);
+    console.log("hehrejh", activity)
   }, [match.params.id, getActivity]);
   const classes = useStyles();
 
-  return loading ? (
+  return activity===null ? (
     <div className="landing-content">
       <h1></h1>Loading
     </div>

@@ -556,7 +556,7 @@ router.get("/activity/:id", auth, async (req, res) => {
           .json({ error: [{ msg: "Not authorizied to view" }] });
       }
     }
-
+    console.log(team.activityLog)
     res.json(team.activityLog);
   } catch (err) {
     console.error(err.message);

@@ -17,6 +17,7 @@ export default function (state = initialState, action) {
         project: payload,
       };
     case GET_ACTIVITY:
+      console.log(payload)
       return {
         ...state,
         loading: false,

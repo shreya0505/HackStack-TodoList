@@ -19,6 +19,7 @@ export const getTeam = (id) => async (dispatch) => {
 export const getActivity = (id) => async (dispatch) => {
   try {
     const res = await axios.get(`/team/activity/${id}`);
+  
     dispatch({
       type: GET_ACTIVITY,
       payload: res.data,
