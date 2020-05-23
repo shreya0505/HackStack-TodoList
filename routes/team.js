@@ -144,7 +144,7 @@ router.post(
       };
       team.activityLog.unshift(newActivityLog);
       await team.save();
-      res.json(team);
+      res.status(200).json({ success: [{ msg: "Task Added" }] });
     } catch (err) {
       console.error(err.message);
       res.status(500).json({ error: [{ msg: "Server Error" }] });
@@ -202,7 +202,7 @@ router.post(
       };
       team.activityLog.unshift(newActivityLog);
       await team.save();
-      res.json(team);
+      res.status(200).json({ success: [{ msg: "Note Added" }] });
     } catch (err) {
       console.error(err.message);
       res.status(500).json({ error: [{ msg: "Server Error" }] });
@@ -219,14 +219,7 @@ router.post(
     if (!error.isEmpty()) {
       return res.status(400).json({ error: error.array() });
     }
-    const {
-      listName,
-      description,
-      status,
-      priority,
-      listItems,
-      duedate,
-    } = req.body;
+    const { duedate, listName, priority } = req.body;
     if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({ error: [{ msg: "Page not found" }] });
     }
@@ -246,15 +239,19 @@ router.post(
             .json({ error: [{ msg: "Not authorizied to post" }] });
         }
       }
+      const newSchedule = new Schedule({
+        owner: req.user.id,
+        duedate,
+      });
+
+      const schedule = await newSchedule.save();
 
       const newChecklist = new Checklist({
         owner: req.user.id,
         listName,
-        description,
-        status,
+
         priority,
-        listItems,
-        duedate,
+        schedule: schedule.id,
       });
 
       const list = await newChecklist.save();
@@ -267,8 +264,9 @@ router.post(
       };
       team.activityLog.unshift(newActivityLog);
       await team.save();
-      await team.save();
-      res.json(team);
+      return res
+        .status(200)
+        .json({ success: [{ msg: "List added Successfully" }], id: list.id });
     } catch (err) {
       console.error(err.message);
       res.status(500).json({ error: [{ msg: "Server Error" }] });
@@ -276,6 +274,70 @@ router.post(
   }
 );
 
+router.post(
+  "/addlistitem/:id",
+  [check("listitem", "Checklist item can't be blank").notEmpty()],
+  auth,
+  async (req, res) => {
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+      return res.status(400).json({ error: error.array() });
+    }
+    const { listitem, status } = req.body;
+
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ error: [{ msg: "Page not found" }] });
+    }
+    try {
+      const checklist = await Checklist.findById(req.params.id);
+      if (!checklist) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Checklist does not exists" }] });
+      }
+      if (req.user.id !== checklist.owner.toString()) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Not authorized to edit" }] });
+      }
+      const newItem = {
+        item: listitem,
+        status,
+      };
+      checklist.listItems.unshift(newItem);
+      await checklist.save();
+      return res.status(200).json({ success: [{ msg: "Item added" }] });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).json({ error: [{ msg: "Server Error" }] });
+    }
+  }
+);
+
+router.put("/togglelist/:id/:cid", auth, async (req, res) => {
+  if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+  if (!req.params.cid.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+  try {
+    const list = await Checklist.findById(req.params.id);
+    if (!list) {
+      return res.status(400).json({ error: [{ msg: "List does not exists" }] });
+    }
+    
+    // Handle Auth to Edit
+
+    const item = list.listItems.find((item) => item.id === req.params.cid);
+    item.status = !item.status;
+    list.save();
+    res.status(200).json({ success: [{ msg: "Successful pin action" }] });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: [{ msg: "Server Error" }] });
+  }
+});
 // router.post(
 //   "/activityLog/:id",
 //   [

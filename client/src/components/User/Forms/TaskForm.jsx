@@ -31,7 +31,7 @@ const initialState = {
   description: "",
   priority: 0,
 };
-export const TaskForm = ({ id }) => {
+export const TaskForm = ({ id, type }) => {
   const [errors, setErrors] = useState([]);
   const [success, setSuccess] = useState([]);
   const [formData, setFormData] = useState(initialState);
@@ -43,6 +43,7 @@ export const TaskForm = ({ id }) => {
   const onToggle = (e) => {
     setFormData({ ...formData, [e.target.name]: !e.target.value });
   };
+
   const onSubmit = async (e) => {
     e.preventDefault();
 
@@ -52,17 +53,18 @@ export const TaskForm = ({ id }) => {
       },
     };
 
-  
-
     const body = JSON.stringify({
       taskName,
       description,
       priority,
-      duedate
+      duedate,
     });
-
+    let res;
     try {
-      const res = await axios.post(`/personal/task/${id}`, body, config);
+      if (type === "personal")
+        res = await axios.post(`/personal/task/${id}`, body, config);
+      if (type === "team")
+        res = await axios.post(`/team/task/${id}`, body, config);
       setErrors([]);
       setSuccess(res.data.success);
       setFormData(initialState);
@@ -141,7 +143,6 @@ export const TaskForm = ({ id }) => {
               ))}
             </TextField>
           </div>
-       
 
           <div style={{ margin: "40px 5px" }}>
             <h5 style={{ textAlign: "left", letterSpacing: "2px" }}>

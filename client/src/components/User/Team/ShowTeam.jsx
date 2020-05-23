@@ -37,10 +37,9 @@ const ShowTeam = ({
 
   const toggleCheck = async (id, cid) => {
     try {
-      //const res = await axios.put(`/personal/togglelist/${id}/${cid}`);
-      //console.log(res);
+      const res = await axios.put(`/team/togglelist/${id}/${cid}`);
       setErrors_nr([]);
-      //setSuccess_nr(res.data.success_nr);
+      setSuccess_nr(res.data.success_nr);
       await getTeam(match.params.id);
     } catch (error) {
       setErrors_nr(error.response.data.error);

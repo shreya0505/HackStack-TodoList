@@ -28,7 +28,7 @@ const initialState = {
   priority: 0,
 };
 
-export const StickyNotes = ({ id }) => {
+export const StickyNotes = ({ id, type }) => {
   const [errors, setErrors] = useState([]);
   const [success, setSuccess] = useState([]);
   const [formData, setFormData] = useState(initialState);
@@ -52,9 +52,13 @@ export const StickyNotes = ({ id }) => {
       status,
       priority,
     });
-
+    let res;
     try {
-      const res = await axios.post(`/personal/stickyNotes/${id}`, body, config);
+       if (type === "personal")
+         res = await axios.post(`/personal/stickyNotes/${id}`, body, config);
+       if (type === "team")
+         res = await axios.post(`/team/stickyNotes/${id}`, body, config);
+      
       setErrors([]);
       setSuccess(res.data.success);
       setFormData(initialState);
