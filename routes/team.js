@@ -16,8 +16,6 @@ router.post(
   "/",
   [
     check("teamName", "Name your team").notEmpty(),
-    check("inviteMembers", "Add atleast one member").exists(),
-    check("inviteMembers.*", "Enter valid email").isEmail(),
     check("teamJoinCode", "Set team join code").notEmpty(),
     check("title", "Title your project").notEmpty(),
     check("purpose", "Purpose of project").notEmpty(),
@@ -36,7 +34,7 @@ router.post(
       title,
       duedate,
       teamName,
-      inviteMembers,
+
       teamJoinCode,
       status,
       label,
@@ -67,15 +65,6 @@ router.post(
       });
 
       const team = await newTeam.save();
-      inviteMembers.forEach(async (email) => {
-        await invite.mailinvite(
-          email,
-          user.name,
-          teamName,
-          team.id,
-          teamJoinCode
-        );
-      });
       user.team.unshift(team.id);
       await user.save();
       res.json(team.id);
@@ -176,13 +165,19 @@ router.post(
           .json({ error: [{ msg: "Project does not exists" }] });
       }
 
+      let found = 0;
       for (let i = 0; i < team.teamMembers.length; i++) {
-        str = team.teamMembers[i].toString();
-        if (str.localeCompare(req.user.id)) {
-          return res
-            .status(400)
-            .json({ error: [{ msg: "Not authorizied to post" }] });
+        let str = team.teamMembers[i].id.toString();
+
+        if (str === req.user.id) {
+          found = 1;
+          break;
         }
+      }
+      if (!found) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Not authorizied to view" }] });
       }
 
       const newNote = new StickyNotes({
@@ -196,7 +191,7 @@ router.post(
 
       const newActivityLog = {
         member: req.user.id,
-        action: "update",
+        action: "post",
         target: "stickynotes",
         targetid: note.id,
       };
@@ -231,13 +226,19 @@ router.post(
           .json({ error: [{ msg: "Project does not exists" }] });
       }
 
+      let found = 0;
       for (let i = 0; i < team.teamMembers.length; i++) {
-        str = team.teamMembers[i].toString();
-        if (str.localeCompare(req.user.id)) {
-          return res
-            .status(400)
-            .json({ error: [{ msg: "Not authorizied to post" }] });
+        let str = team.teamMembers[i].id.toString();
+
+        if (str === req.user.id) {
+          found = 1;
+          break;
         }
+      }
+      if (!found) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Not authorizied to view" }] });
       }
       const newSchedule = new Schedule({
         owner: req.user.id,
@@ -338,48 +339,6 @@ router.put("/togglelist/:id/:cid", auth, async (req, res) => {
     res.status(500).json({ error: [{ msg: "Server Error" }] });
   }
 });
-// router.post(
-//   "/activityLog/:id",
-//   [
-//     check("member", "Member required").notEmpty(),
-//     check("action", "Action required").notEmpty(),
-//     check("target", "Target required").notEmpty(),
-//     check("targetid", "Targetid required").notEmpty(),
-//   ],
-//   auth,
-//   async (req, res) => {
-//     const error = validationResult(req);
-//     if (!error.isEmpty()) {
-//       return res.status(500).json({ error: error.array() });
-//     }
-//     const { member, action, target, targetid } = req.body;
-//     if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
-//       return res.status(400).json({ error: [{ msg: "Page not found" }] });
-//     }
-//     try {
-//       const team = await Team.findById(req.params.id);
-//       if (!team) {
-//         return res
-//           .status(400)
-//           .json({ error: [{ msg: "Project does not exists" }] });
-//       }
-
-//       const newActivity = {
-//         member,
-//         action,
-//         target,
-//         targetid,
-//       };
-//       team.activityLog.unshift(newActivity);
-
-//       const logged = await team.save();
-//       res.json(logged);
-//     } catch (err) {
-//       console.error(err.message);
-//       res.status(500).json({ error: [{ msg: "Server Error" }] });
-//     }
-//   }
-// );
 
 router.post(
   "/join/:id",
@@ -407,22 +366,27 @@ router.post(
           .status(400)
           .json({ error: [{ msg: "Project does not exists" }] });
       }
+    
 
+      
       for (let i = 0; i < team.teamMembers.length; i++) {
-        str = team.teamMembers[i].toString();
-        if (!str.localeCompare(req.user.id)) {
+        let str = team.teamMembers[i].toString();
+        console.log(str, req.user.id, str === req.user.id)
+        if (str === req.user.id) {
           return res
             .status(400)
-            .json({ error: [{ msg: "You are already a part of the team" }] });
+            .json({ error: [{ msg: "Already Part of the team" }] });
         }
       }
-
+     
       if (
         teamid.toString() === team.id.toString() &&
         teamJoinCode === team.teamJoinCode
-      )
+      ) {
+        
         team.teamMembers.unshift(req.user.id);
-      else {
+        console.log(team.teamMembers)
+      } else {
         return res
           .status(400)
           .json({ error: [{ msg: "Invalid Credentials" }] });
@@ -436,8 +400,10 @@ router.post(
       team.activityLog.unshift(newActivityLog);
 
       await team.save();
-      const user = User.findById(req.user.id);
+      const user = await User.findById(req.user.id);
+      console.log(user)
       user.team.unshift(team.id);
+      console.log(user.team)
       await user.save();
       res.json(user);
     } catch (err) {
@@ -450,8 +416,8 @@ router.post(
 router.post(
   "/sendInvites/:id",
   [
-    check("inviteMembers", "Add atleast one member").exists(),
-    check("inviteMembers.*", "Enter valid email").isEmail(),
+    check("email", "Enter Email").exists(),
+    check("email", "Enter valid email").isEmail(),
   ],
   auth,
   async (req, res) => {
@@ -459,7 +425,7 @@ router.post(
     if (!error.isEmpty()) {
       return res.status(500).json({ error: error.array() });
     }
-    const { inviteMembers } = req.body;
+    const { email } = req.body;
     if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({ error: [{ msg: "Page not found" }] });
     }
@@ -477,17 +443,16 @@ router.post(
           .json({ error: [{ msg: "Only Team Manager can send Invites" }] });
       }
 
-      inviteMembers.forEach(async (email) => {
-        await invite.mailinvite(
-          email,
-          "someone",
-          team.teamName,
-          team.id,
-          team.teamJoinCode
-        );
-      });
+      await invite.mailinvite(
+        email,
+        team.managerName,
+        team.teamName,
+        team.purpose,
+        team.id,
+        team.teamJoinCode
+      );
 
-      res.status(200).json({ success: [{ msg: "Sent Invites Successfully" }] });
+      res.status(200).json({ success: [{ msg: "Invite sent successfully" }] });
     } catch (err) {
       console.error(err.message);
       res.status(500).json({ error: [{ msg: "Server Error" }] });
@@ -496,6 +461,16 @@ router.post(
 );
 
 //READ==================================================================================
+router.get("/all", auth, async (req, res) => {
+  try {
+    const users = await User.find({}, "email username");
+
+    res.json(users);
+  } catch (error) {
+    console.error(err.message);
+    res.status(500).json({ error: [{ msg: "Server Error" }] });
+  }
+});
 
 router.get("/project/:id", auth, async (req, res) => {
   if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
@@ -519,16 +494,21 @@ router.get("/project/:id", auth, async (req, res) => {
         .status(400)
         .json({ error: [{ msg: "Project does not exists" }] });
     }
-
+    let found = 0;
     for (let i = 0; i < team.teamMembers.length; i++) {
-      str = team.teamMembers[i].id.toString();
-      if (str.localeCompare(req.user.id)) {
-        return res
-          .status(400)
-          .json({ error: [{ msg: "Not authorizied to post" }] });
-      }
+      let str = team.teamMembers[i].id.toString();
+      
+      if (str === req.user.id) 
+      {
+        found = 1;
+        break;
+        }
     }
-
+    if(!found){
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Not authorizied to view" }] });
+    }
     res.json(team);
   } catch (err) {
     console.error(err.message);
@@ -547,16 +527,22 @@ router.get("/activity/:id", auth, async (req, res) => {
         .status(400)
         .json({ error: [{ msg: "Project does not exists" }] });
     }
-
+    
+    let found = 0;
     for (let i = 0; i < team.teamMembers.length; i++) {
-      str = team.teamMembers[i].toString();
-      if (str.localeCompare(req.user.id)) {
-        return res
-          .status(400)
-          .json({ error: [{ msg: "Not authorizied to view" }] });
+      
+      let str = team.teamMembers[i].toString();
+      console.log(str, req.user.id)
+      if (str === req.user.id) {
+        found = 1;
+        break;
       }
     }
-    console.log(team.activityLog)
+    if (!found) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Not authorizied to view" }] });
+    }
     res.json(team.activityLog);
   } catch (err) {
     console.error(err.message);
@@ -583,13 +569,19 @@ router.get("/task/:id/:pid", auth, async (req, res) => {
     if (!task) {
       return res.status(400).json({ error: [{ msg: "Task does not exists" }] });
     }
+    let found = 0;
     for (let i = 0; i < team.teamMembers.length; i++) {
-      str = team.teamMembers[i].toString();
-      if (str.localeCompare(req.user.id)) {
-        return res
-          .status(400)
-          .json({ error: [{ msg: "Not authorizied to view" }] });
+      let str = team.teamMembers[i].id.toString();
+
+      if (str === req.user.id) {
+        found = 1;
+        break;
       }
+    }
+    if (!found) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Not authorizied to view" }] });
     }
     res.json(task);
   } catch (err) {
@@ -617,13 +609,19 @@ router.get("/stickyNotes/:id/:pid", auth, async (req, res) => {
       return res.status(400).json({ error: [{ msg: "Note does not exists" }] });
     }
 
+    let found = 0;
     for (let i = 0; i < team.teamMembers.length; i++) {
-      str = team.teamMembers[i].toString();
-      if (str.localeCompare(req.user.id)) {
-        return res
-          .status(400)
-          .json({ error: [{ msg: "Not authorizied to post" }] });
+      let str = team.teamMembers[i].id.toString();
+
+      if (str === req.user.id) {
+        found = 1;
+        break;
       }
+    }
+    if (!found) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Not authorizied to view" }] });
     }
     res.json(note);
   } catch (err) {
@@ -650,13 +648,19 @@ router.get("/checklist/:id/:pid", auth, async (req, res) => {
     if (!list) {
       return res.status(400).json({ error: [{ msg: "List does not exists" }] });
     }
+    let found = 0;
     for (let i = 0; i < team.teamMembers.length; i++) {
-      str = team.teamMembers[i].toString();
-      if (str.localeCompare(req.user.id)) {
-        return res
-          .status(400)
-          .json({ error: [{ msg: "Not authorizied to post" }] });
+      let str = team.teamMembers[i].id.toString();
+
+      if (str === req.user.id) {
+        found = 1;
+        break;
       }
+    }
+    if (!found) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Not authorizied to view" }] });
     }
     res.json(list);
   } catch (err) {
@@ -688,13 +692,19 @@ router.put(
           .status(400)
           .json({ error: [{ msg: "Project does not exists" }] });
       }
+      let found = 0;
       for (let i = 0; i < team.teamMembers.length; i++) {
-        str = team.teamMembers[i].toString();
-        if (str.localeCompare(req.user.id)) {
-          return res
-            .status(400)
-            .json({ error: [{ msg: "Not authorizied to post" }] });
+        let str = team.teamMembers[i].id.toString();
+
+        if (str === req.user.id) {
+          found = 1;
+          break;
         }
+      }
+      if (!found) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Not authorizied to view" }] });
       }
       const updated = await Team.findByIdAndUpdate(req.params.id, req.body);
       await updated.save();
@@ -743,13 +753,19 @@ router.put(
           .status(400)
           .json({ error: [{ msg: "Task does not exists" }] });
       }
+      let found = 0;
       for (let i = 0; i < team.teamMembers.length; i++) {
-        str = team.teamMembers[i].toString();
-        if (str.localeCompare(req.user.id)) {
-          return res
-            .status(400)
-            .json({ error: [{ msg: "Not authorizied to post" }] });
+        let str = team.teamMembers[i].id.toString();
+
+        if (str === req.user.id) {
+          found = 1;
+          break;
         }
+      }
+      if (!found) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Not authorizied to view" }] });
       }
 
       let updated = await Tasks.findByIdAndUpdate(req.params.id, req.body);
@@ -788,13 +804,19 @@ router.put("/updateSchedule/:id/:pid", auth, async (req, res) => {
     if (!schedule) {
       return res.status(400).json({ error: [{ msg: "Task does not exists" }] });
     }
+    let found = 0;
     for (let i = 0; i < team.teamMembers.length; i++) {
-      str = team.teamMembers[i].toString();
-      if (str.localeCompare(req.user.id)) {
-        return res
-          .status(400)
-          .json({ error: [{ msg: "Not authorizied to post" }] });
+      let str = team.teamMembers[i].id.toString();
+
+      if (str === req.user.id) {
+        found = 1;
+        break;
       }
+    }
+    if (!found) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Not authorizied to view" }] });
     }
     let updated = await Schedule.findByIdAndUpdate(req.params.id, req.body);
     await updated.save();
@@ -845,13 +867,19 @@ router.put(
           .json({ error: [{ msg: "Note does not exists" }] });
       }
 
+      let found = 0;
       for (let i = 0; i < team.teamMembers.length; i++) {
-        str = team.teamMembers[i].toString();
-        if (str.localeCompare(req.user.id)) {
-          return res
-            .status(400)
-            .json({ error: [{ msg: "Not authorizied to post" }] });
+        let str = team.teamMembers[i].id.toString();
+
+        if (str === req.user.id) {
+          found = 1;
+          break;
         }
+      }
+      if (!found) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Not authorizied to view" }] });
       }
 
       const updated = await StickyNotes.findByIdAndUpdate(
@@ -904,13 +932,19 @@ router.put(
           .status(400)
           .json({ error: [{ msg: "List does not exists" }] });
       }
+      let found = 0;
       for (let i = 0; i < team.teamMembers.length; i++) {
-        str = team.teamMembers[i].toString();
-        if (str.localeCompare(req.user.id)) {
-          return res
-            .status(400)
-            .json({ error: [{ msg: "Not authorizied to post" }] });
+        let str = team.teamMembers[i].id.toString();
+
+        if (str === req.user.id) {
+          found = 1;
+          break;
         }
+      }
+      if (!found) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Not authorizied to view" }] });
       }
       const updated = await Checklist.findByIdAndUpdate(
         req.params.id,
@@ -994,10 +1028,19 @@ router.delete("/deleteProject/:id", auth, async (req, res) => {
     for (let i = 0; i < notes.length; i++) {
       await StickyNotes.findByIdAndDelete(notes[i]);
     }
+    let found = 0;
     for (let i = 0; i < team.teamMembers.length; i++) {
-      let user = await User.findById(team.teamMembers[i]);
-      user.team = user.team.filter((id) => id.toString() !== req.params.id);
-      await user.save();
+      let str = team.teamMembers[i].id.toString();
+
+      if (str === req.user.id) {
+        found = 1;
+        break;
+      }
+    }
+    if (!found) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Not authorizied to view" }] });
     }
     await Team.findByIdAndDelete(req.params.id);
 

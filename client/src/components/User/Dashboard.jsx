@@ -73,7 +73,7 @@ const Dashboard = ({ auth: { user, loading } }) => {
                 </span>
               </button>
               <button
-                onClick={() => (window.location.href = "/addProject")}
+                onClick={() => (window.location.href = "/join")}
                 class="btn btn-light btn-lg"
                 style={{
                   letterSpacing: "2px",

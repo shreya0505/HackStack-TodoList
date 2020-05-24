@@ -1,9 +1,10 @@
-import { GET_TEAM, GET_ACTIVITY } from "../actions/types";
+import { GET_TEAM, GET_ACTIVITY, GET_ALL } from "../actions/types";
 
 const initialState = {
   project: null,
   loading: true,
   activity: null,
+  users: null,
 };
 
 export default function (state = initialState, action) {
@@ -17,11 +18,16 @@ export default function (state = initialState, action) {
         project: payload,
       };
     case GET_ACTIVITY:
-      console.log(payload)
       return {
         ...state,
         loading: false,
         activity: payload,
+      };
+    case GET_ALL:
+      return {
+        ...state,
+        loading: false,
+        users: payload,
       };
     default:
       return state;

@@ -109,7 +109,7 @@ const ShowTeam = ({
 
                 {user._id === project.manager._id && (
                   <button
-                    onClick={() => (window.location.href = "/addProject")}
+                    onClick={() => (window.location.href = `/invite/${match.params.id}`)}
                     class="btn btn-light btn-lg"
                     style={{
                       letterSpacing: "2px",
@@ -148,7 +148,9 @@ const ShowTeam = ({
                   </button>
                 )}
                 <button
-                  onClick={() => (window.location.href = `/activity/${project._id}`)}
+                  onClick={() =>
+                    (window.location.href = `/activity/${project._id}`)
+                  }
                   class="btn btn-light btn-lg"
                   style={{
                     letterSpacing: "2px",

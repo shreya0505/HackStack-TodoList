@@ -9,26 +9,17 @@ export const AddTeam = () => {
     title: "",
     purpose: "",
     label: "",
-    member: "",
     teamJoinCode: "",
     teamName: "",
   });
-  const [inviteMembers, setInviteMembers] = useState([]);
+
   const [duedate, setDueDate] = useState(null);
-  const { title, purpose, label, teamJoinCode, member, teamName } = formData;
+  const { title, purpose, label, teamJoinCode, teamName } = formData;
 
   const [errors, setErrors] = useState([]);
 
   const onChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const onAdd = (e) => {
-    e.preventDefault();
-    let invites = inviteMembers;
-    invites.push(member);
-    setInviteMembers(invites);
-    setFormData({ ...formData, [member]: "" });
   };
 
   const onSubmit = async (e) => {
@@ -39,13 +30,11 @@ export const AddTeam = () => {
       },
     };
 
- 
     const body = JSON.stringify({
       title,
       purpose,
       label,
       teamJoinCode,
-      inviteMembers,
       teamName,
     });
     try {
@@ -166,8 +155,6 @@ export const AddTeam = () => {
                 style={{ margin: "10px 5px" }}
               />
 
-             
-
               <div style={{ margin: "40px 5px" }}>
                 <h5 style={{ textAlign: "left", letterSpacing: "2px" }}>
                   Due Date
@@ -192,7 +179,11 @@ export const AddTeam = () => {
 
               <button
                 class="btn btn-light btn-lg"
-                style={{ letterSpacing: "2px", marginTop: "20px", width:"100%" }}
+                style={{
+                  letterSpacing: "2px",
+                  marginTop: "20px",
+                  width: "100%",
+                }}
               >
                 CREATE
               </button>

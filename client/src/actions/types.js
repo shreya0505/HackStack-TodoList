@@ -10,3 +10,4 @@ export const GET_CHECKLIST = "GET_CHECKLIST";
 
 export const GET_TEAM = "GET_TEAM";
 export const GET_ACTIVITY = "GET_ACTIVITY";
+export const GET_ALL = "GET_ALL";
