@@ -167,7 +167,7 @@ router.post(
 
       let found = 0;
       for (let i = 0; i < team.teamMembers.length; i++) {
-        let str = team.teamMembers[i].id.toString();
+        let str = team.teamMembers[i].toString();
 
         if (str === req.user.id) {
           found = 1;
@@ -228,7 +228,7 @@ router.post(
 
       let found = 0;
       for (let i = 0; i < team.teamMembers.length; i++) {
-        let str = team.teamMembers[i].id.toString();
+        let str = team.teamMembers[i].toString();
 
         if (str === req.user.id) {
           found = 1;
@@ -238,7 +238,7 @@ router.post(
       if (!found) {
         return res
           .status(400)
-          .json({ error: [{ msg: "Not authorizied to view" }] });
+          .json({ error: [{ msg: "Not authorizied to post" }] });
       }
       const newSchedule = new Schedule({
         owner: req.user.id,
@@ -289,6 +289,7 @@ router.post(
     if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({ error: [{ msg: "Page not found" }] });
     }
+
     try {
       const checklist = await Checklist.findById(req.params.id);
       if (!checklist) {
@@ -296,6 +297,7 @@ router.post(
           .status(400)
           .json({ error: [{ msg: "Checklist does not exists" }] });
       }
+
       if (req.user.id !== checklist.owner.toString()) {
         return res
           .status(400)
@@ -366,26 +368,23 @@ router.post(
           .status(400)
           .json({ error: [{ msg: "Project does not exists" }] });
       }
-    
 
-      
       for (let i = 0; i < team.teamMembers.length; i++) {
         let str = team.teamMembers[i].toString();
-        console.log(str, req.user.id, str === req.user.id)
+        console.log(str, req.user.id, str === req.user.id);
         if (str === req.user.id) {
           return res
             .status(400)
             .json({ error: [{ msg: "Already Part of the team" }] });
         }
       }
-     
+
       if (
         teamid.toString() === team.id.toString() &&
         teamJoinCode === team.teamJoinCode
       ) {
-        
         team.teamMembers.unshift(req.user.id);
-        console.log(team.teamMembers)
+        console.log(team.teamMembers);
       } else {
         return res
           .status(400)
@@ -401,9 +400,9 @@ router.post(
 
       await team.save();
       const user = await User.findById(req.user.id);
-      console.log(user)
+      console.log(user);
       user.team.unshift(team.id);
-      console.log(user.team)
+      console.log(user.team);
       await user.save();
       res.json(user);
     } catch (err) {
@@ -497,14 +496,13 @@ router.get("/project/:id", auth, async (req, res) => {
     let found = 0;
     for (let i = 0; i < team.teamMembers.length; i++) {
       let str = team.teamMembers[i].id.toString();
-      
-      if (str === req.user.id) 
-      {
+
+      if (str === req.user.id) {
         found = 1;
         break;
-        }
+      }
     }
-    if(!found){
+    if (!found) {
       return res
         .status(400)
         .json({ error: [{ msg: "Not authorizied to view" }] });
@@ -527,12 +525,11 @@ router.get("/activity/:id", auth, async (req, res) => {
         .status(400)
         .json({ error: [{ msg: "Project does not exists" }] });
     }
-    
+
     let found = 0;
     for (let i = 0; i < team.teamMembers.length; i++) {
-      
       let str = team.teamMembers[i].toString();
-      console.log(str, req.user.id)
+      console.log(str, req.user.id);
       if (str === req.user.id) {
         found = 1;
         break;
@@ -611,7 +608,7 @@ router.get("/stickyNotes/:id/:pid", auth, async (req, res) => {
 
     let found = 0;
     for (let i = 0; i < team.teamMembers.length; i++) {
-      let str = team.teamMembers[i].id.toString();
+      let str = team.teamMembers[i].toString();
 
       if (str === req.user.id) {
         found = 1;

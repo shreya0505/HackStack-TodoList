@@ -3,7 +3,7 @@ const connectDB = require("./config/db");
 
 const app = express();
 const server = require("http").createServer(app);
-const io = require("socket.io")(server);
+const io = require("socket.io")(server, { origins: "*:*" });
 
 connectDB();
 
@@ -20,6 +20,17 @@ app.get("/", (req, res) => res.send("API RUNNING"));
 app.use("/auth", require("./routes/auth"));
 app.use("/personal", require("./routes/personal"));
 app.use("/team", require("./routes/team"));
+
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", `${req.headers.origin}`);
+  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+  res.header("Access-Control-Allow-Credentials", "true");
+  next();
+});
 
 const PORT = process.env.PORT || 5000;
 
@@ -50,6 +61,6 @@ io.on("connection", (socket) => {
   });
 });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });

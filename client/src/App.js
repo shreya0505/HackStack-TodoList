@@ -20,6 +20,8 @@ import ShowTeam from "./components/User/Team/ShowTeam";
 import AcitivityLogs from "./components/User/Team/AcitivityLogs";
 import SendInvite from "./components/User/Team/SendInvite";
 import JoinTeam from "./components/User/Team/JoinTeam";
+import Chat from "./components/User/Team/Chat";
+
 
 import { Provider } from "react-redux";
 import store from "./store";
@@ -63,6 +65,7 @@ const App = () => {
             />
             <PrivateRoute exact path="/invite/:id" component={SendInvite} />
             <PrivateRoute exact path="/join" component={JoinTeam} />
+            <PrivateRoute exact path="/chat/:id" component={Chat} />
           </Switch>
           <Footer />
         </Router>
