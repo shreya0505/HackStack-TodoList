@@ -203,7 +203,7 @@ router.post(
     if (!error.isEmpty()) {
       return res.status(400).json({ error: error.array() });
     }
-    const { title, message } = req.body;
+    const { title, message , priority} = req.body;
     if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({ error: [{ msg: "Page not found" }] });
     }
@@ -224,6 +224,7 @@ router.post(
         owner: req.user.id,
         title,
         message,
+        priority
       });
 
       const note = await newNote.save();

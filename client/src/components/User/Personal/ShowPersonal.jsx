@@ -238,6 +238,20 @@ export const ShowPersonal = ({
                 <Delete color="secondary" />
               </IconButton>
             </h3>
+            <p>
+              {task.priority === 0 && (
+                <span class="badge badge-warning">Low</span>
+              )}
+              {task.priority === 3 && (
+                <span class="badge badge-secondary">Medium</span>
+              )}
+              {task.priority === 2 && (
+                <span class="badge badge-danger">Urgent</span>
+              )}
+              {task.priority === 1 && (
+                <span class="badge badge-dark">High</span>
+              )}
+            </p>
             <p> {task.description}</p>
             {task.subtasks.map((subtask, i) => (
               <div key={i}>
@@ -347,7 +361,20 @@ export const ShowPersonal = ({
                 <Delete color="secondary" />
               </IconButton>
             </h3>
-
+            <p>
+              {list.priority === 0 && (
+                <span class="badge badge-warning">Low</span>
+              )}
+              {list.priority === 3 && (
+                <span class="badge badge-secondary">Medium</span>
+              )}
+              {list.priority === 2 && (
+                <span class="badge badge-danger">Urgent</span>
+              )}
+              {list.priority === 1 && (
+                <span class="badge badge-dark">High</span>
+              )}
+            </p>
             {list.schedule.duedate && (
               <div style={{ letterSpacing: "2px", fontFamily: "monospace" }}>
                 <b>Date: {"  "}</b>
@@ -432,6 +459,20 @@ export const ShowPersonal = ({
                 <Delete color="secondary" />
               </IconButton>
             </h3>
+            <p>
+              {note.priority === 0 && (
+                <span class="badge badge-warning">Low</span>
+              )}
+              {note.priority === 3 && (
+                <span class="badge badge-secondary">Medium</span>
+              )}
+              {note.priority === 2 && (
+                <span class="badge badge-danger">Urgent</span>
+              )}
+              {note.priority === 1 && (
+                <span class="badge badge-dark">High</span>
+              )}
+            </p>
             <p>{note.message}</p>
           </div>
         ))}

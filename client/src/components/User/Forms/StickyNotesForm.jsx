@@ -41,6 +41,7 @@ export const StickyNotes = ({ id, type }) => {
 
   const onChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    console.log(e.target.name, e.target.value);
   };
 
   const onSubmit = async (e) => {
@@ -57,6 +58,8 @@ export const StickyNotes = ({ id, type }) => {
       status,
       priority,
     });
+    console.log(body);
+
     let res;
     try {
       if (type === "personal")

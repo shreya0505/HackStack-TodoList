@@ -20,7 +20,6 @@ var snSchema = new Schema({
   },
   priority: {
     type: Number,
-    default: 0,
   },
 });
 

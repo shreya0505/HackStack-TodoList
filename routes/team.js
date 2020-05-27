@@ -152,10 +152,11 @@ router.post(
     if (!error.isEmpty()) {
       return res.status(400).json({ error: error.array() });
     }
-    const { title, message } = req.body;
+    const { title, message, priority } = req.body;
     if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({ error: [{ msg: "Page not found" }] });
     }
+
     try {
       const team = await Team.findById(req.params.id);
       if (!team) {
@@ -183,6 +184,7 @@ router.post(
         owner: req.user.id,
         title,
         message,
+        priority,
       });
 
       const note = await newNote.save();
@@ -534,6 +536,10 @@ router.post("/chat/:id", auth, async (req, res) => {
     if (!team) {
       return res.status(400).json({ error: [{ msg: "Team does not exists" }] });
     }
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(400).json({ error: [{ msg: "User does not exists" }] });
+    }
 
     let found = 0;
     for (let i = 0; i < team.teamMembers.length; i++) {
@@ -551,7 +557,7 @@ router.post("/chat/:id", auth, async (req, res) => {
     }
 
     const newChat = {
-      sender: req.user.id,
+      sender: user.username,
       text: text,
     };
     team.chat.unshift(newChat);

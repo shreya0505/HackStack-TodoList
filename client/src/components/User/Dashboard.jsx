@@ -1,6 +1,7 @@
 import React, { Fragment } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
+import Moment from "react-moment";
 import { connect } from "react-redux";
 import {
   Group,
@@ -130,6 +131,7 @@ const Dashboard = ({ auth: { user, loading } }) => {
           </div>
         </div>
         <hr></hr>
+        <div style={{ marginTop: "50px", marginBottom: "50px" }}></div>
         <div style={{ marginTop: "50px", marginBottom: "50px" }}>
           <h3>
             Perosnal Projects{" "}
@@ -157,6 +159,23 @@ const Dashboard = ({ auth: { user, loading } }) => {
                       className="border rounded"
                     >
                       <h4>{personal.title}</h4>
+                      <h5>
+                        <span class="badge badge-warning">
+                          {personal.label}
+                        </span>
+                        &nbsp;
+                        <span class="badge badge-danger">
+                          {personal.duedate && (
+                            <Moment
+                              format=" DD/MM/YY"
+                              date={personal.duedate}
+                              style={{
+                                fontFamily: "monospace",
+                              }}
+                            />
+                          )}
+                        </span>
+                      </h5>
                       <div style={{ textAlign: "center" }}>
                         <button
                           class="btn btn-light btn-lg"
@@ -259,6 +278,9 @@ const Dashboard = ({ auth: { user, loading } }) => {
                       className="border rounded"
                     >
                       <h4>{team.title}</h4>
+                      <h3>
+                        <span class="badge badge-warning">{team.label}</span>
+                      </h3>
                       <div style={{ textAlign: "center" }}>
                         <button
                           class="btn btn-light btn-lg"
