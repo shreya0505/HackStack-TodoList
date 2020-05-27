@@ -22,7 +22,6 @@ import SendInvite from "./components/User/Team/SendInvite";
 import JoinTeam from "./components/User/Team/JoinTeam";
 import Chat from "./components/User/Team/Chat";
 
-
 import { Provider } from "react-redux";
 import store from "./store";
 import { loadUser, setNotAuth } from "./actions/auth";

@@ -9,6 +9,7 @@ var scheduleSchema = new Schema({
 
   duedate: {
     type: Date,
+    default: null,
   },
 });
 

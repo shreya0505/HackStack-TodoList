@@ -459,6 +459,46 @@ router.post(
   }
 );
 
+router.post("/chat/:id", auth, async (req, res) => {
+  if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+  const { sender, text, date } = req.body;
+
+  try {
+    const team = await Team.findById(req.params.id);
+    if (!team) {
+      return res.status(400).json({ error: [{ msg: "Team does not exists" }] });
+    }
+
+    let found = 0;
+    for (let i = 0; i < team.teamMembers.length; i++) {
+      let str = team.teamMembers[i].toString();
+
+      if (str === req.user.id) {
+        found = 1;
+        break;
+      }
+    }
+    if (!found) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Not authorizied to chat" }] });
+    }
+
+    const newChat = {
+      sender: req.user.id,
+      text: text,
+    };
+    team.chat.unshift(newChat);
+    await team.save();
+    res.status(200).json({ success: [{ msg: "New Chat" }] });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: [{ msg: "Server Error" }] });
+  }
+});
+
 //READ==================================================================================
 router.get("/all", auth, async (req, res) => {
   try {
@@ -660,6 +700,39 @@ router.get("/checklist/:id/:pid", auth, async (req, res) => {
         .json({ error: [{ msg: "Not authorizied to view" }] });
     }
     res.json(list);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: [{ msg: "Server Error" }] });
+  }
+});
+
+
+router.get("/chat/:id", auth, async (req, res) => {
+  if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+
+  try {
+    const team = await Team.findById(req.params.id);
+    if (!team) {
+      return res.status(400).json({ error: [{ msg: "Team does not exists" }] });
+    }
+
+    let found = 0;
+    for (let i = 0; i < team.teamMembers.length; i++) {
+      let str = team.teamMembers[i].toString();
+
+      if (str === req.user.id) {
+        found = 1;
+        break;
+      }
+    }
+    if (!found) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Not authorizied to chat" }] });
+    }
+    res.json(team.chat);
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: [{ msg: "Server Error" }] });

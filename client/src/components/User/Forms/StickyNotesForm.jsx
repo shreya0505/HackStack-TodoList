@@ -1,5 +1,10 @@
 import React, { useState } from "react";
-import { TextField, MenuItem, TextareaAutosize } from "@material-ui/core";
+import {
+  TextField,
+  MenuItem,
+  TextareaAutosize,
+  Switch,
+} from "@material-ui/core";
 import axios from "axios";
 
 const priorities = [
@@ -54,11 +59,11 @@ export const StickyNotes = ({ id, type }) => {
     });
     let res;
     try {
-       if (type === "personal")
-         res = await axios.post(`/personal/stickyNotes/${id}`, body, config);
-       if (type === "team")
-         res = await axios.post(`/team/stickyNotes/${id}`, body, config);
-      
+      if (type === "personal")
+        res = await axios.post(`/personal/stickyNotes/${id}`, body, config);
+      if (type === "team")
+        res = await axios.post(`/team/stickyNotes/${id}`, body, config);
+
       setErrors([]);
       setSuccess(res.data.success);
       setFormData(initialState);
@@ -86,11 +91,7 @@ export const StickyNotes = ({ id, type }) => {
           <h4 style={{ textAlign: "center", letterSpacing: "2px" }}>
             Add Sticky Notes
           </h4>
-          {success.map((success, index) => (
-            <div key={index} class="alert alert-success" role="alert">
-              {success.msg}
-            </div>
-          ))}
+
           {errors.map((error, index) => (
             <div key={index} class="alert alert-danger" role="alert">
               {error.msg}

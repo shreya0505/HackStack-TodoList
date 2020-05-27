@@ -61,7 +61,7 @@ router.post(
     }
 
     const { duedate, taskName, description, priority } = req.body;
-
+    console.log(req.body);
     if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({ error: [{ msg: "Page not found" }] });
     }
@@ -96,7 +96,94 @@ router.post(
       await personal.save();
       return res
         .status(200)
+        .json({ success: [{ msg: "Task added Successfully" }], id: task.id });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).json({ error: [{ msg: "Server Error" }] });
+    }
+  }
+);
+
+router.post(
+  "/quick/task",
+  [check("taskName", "Task must be named").notEmpty()],
+  auth,
+  async (req, res) => {
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+      return res.status(400).json({ error: error.array() });
+    }
+
+    const { duedate, taskName, description, priority } = req.body;
+
+    try {
+      const user = await User.findById(req.user.id);
+      if (!user) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "User does not exists" }] });
+      }
+
+      const newSchedule = new Schedule({
+        owner: req.user.id,
+        duedate,
+      });
+
+      const schedule = await newSchedule.save();
+      const newTask = new Tasks({
+        owner: req.user.id,
+        taskName,
+        description,
+        priority,
+        schedule: schedule.id,
+      });
+      const task = await newTask.save();
+      user.task.unshift(task.id);
+      await user.save();
+      return res
+        .status(200)
         .json({ success: [{ msg: "Task added Successfully" }] });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).json({ error: [{ msg: "Server Error" }] });
+    }
+  }
+);
+
+router.post(
+  "/addsubtask/:id",
+  [check("sub", "Subtask can't be blank").notEmpty()],
+  auth,
+  async (req, res) => {
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+      return res.status(400).json({ error: error.array() });
+    }
+    const { sub, status, due } = req.body;
+
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ error: [{ msg: "Page not found" }] });
+    }
+    try {
+      const task = await Tasks.findById(req.params.id);
+      if (!task) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Task does not exists" }] });
+      }
+      if (req.user.id !== task.owner.toString()) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Not authorized to post" }] });
+      }
+      const newItem = {
+        sub,
+        status,
+        due,
+      };
+      task.subtasks.unshift(newItem);
+      await task.save();
+      return res.status(200).json({ success: [{ msg: "Subtask added" }] });
     } catch (err) {
       console.error(err.message);
       res.status(500).json({ error: [{ msg: "Server Error" }] });
@@ -153,6 +240,47 @@ router.post(
 );
 
 router.post(
+  "/quick/stickyNotes",
+  [
+    check("title", "Note must be named").notEmpty(),
+    check("message", "Message is needed").notEmpty(),
+  ],
+  auth,
+  async (req, res) => {
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+      return res.status(400).json({ error: error.array() });
+    }
+    const { title, message } = req.body;
+
+    try {
+      const user = await User.findById(req.user.id);
+      if (!user) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "User does not exists" }] });
+      }
+
+      const newNote = new StickyNotes({
+        owner: req.user.id,
+        title,
+        message,
+      });
+
+      const note = await newNote.save();
+      user.notes.unshift(note.id);
+      await user.save();
+      return res
+        .status(200)
+        .json({ success: [{ msg: "Note added Successfully" }] });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).json({ error: [{ msg: "Server Error" }] });
+    }
+  }
+);
+
+router.post(
   "/checklist/:id",
   [check("listName", "List must be named").notEmpty()],
   auth,
@@ -161,11 +289,7 @@ router.post(
     if (!error.isEmpty()) {
       return res.status(400).json({ error: error.array() });
     }
-    const {
-      duedate,
-      listName,
-      priority,
-    } = req.body;
+    const { duedate, listName, priority } = req.body;
 
     if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({ error: [{ msg: "Not found" }] });
@@ -199,6 +323,49 @@ router.post(
       const list = await newList.save();
       personal.checklist.unshift(list.id);
       await personal.save();
+      return res
+        .status(200)
+        .json({ success: [{ msg: "List added Successfully" }], id: list.id });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).json({ error: [{ msg: "Server Error" }] });
+    }
+  }
+);
+
+router.post(
+  "/quick/checklist",
+  [check("listName", "List must be named").notEmpty()],
+  auth,
+  async (req, res) => {
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+      return res.status(400).json({ error: error.array() });
+    }
+    const { duedate, listName, priority } = req.body;
+
+    try {
+      const user = await User.findById(req.user.id);
+      if (!user) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "User does not exists" }] });
+      }
+      const newSchedule = new Schedule({
+        owner: req.user.id,
+        duedate,
+      });
+
+      const schedule = await newSchedule.save();
+      const newList = new Checklist({
+        owner: req.user.id,
+        listName,
+        priority,
+        schedule: schedule.id,
+      });
+      const list = await newList.save();
+      user.checklist.unshift(list.id);
+      await user.save();
       return res
         .status(200)
         .json({ success: [{ msg: "List added Successfully" }], id: list.id });
@@ -248,6 +415,47 @@ router.post(
     }
   }
 );
+
+router.post(
+  "/addlistitem/:id",
+  [check("listitem", "Checklist item can't be blank").notEmpty()],
+  auth,
+  async (req, res) => {
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+      return res.status(400).json({ error: error.array() });
+    }
+    const { listitem, status } = req.body;
+
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ error: [{ msg: "Page not found" }] });
+    }
+    try {
+      const checklist = await Checklist.findById(req.params.id);
+      if (!checklist) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Checklist does not exists" }] });
+      }
+      if (req.user.id !== checklist.owner.toString()) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Not authorized to post" }] });
+      }
+      const newItem = {
+        item: listitem,
+        status,
+      };
+      checklist.listItems.unshift(newItem);
+      await checklist.save();
+      return res.status(200).json({ success: [{ msg: "Item added" }] });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).json({ error: [{ msg: "Server Error" }] });
+    }
+  }
+);
+
 //READ==================================================================================
 
 router.get("/project/:id", auth, async (req, res) => {
@@ -278,6 +486,32 @@ router.get("/project/:id", auth, async (req, res) => {
         .json({ error: [{ msg: "Not authorized to view" }] });
     }
 
+    res.json(personal);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: [{ msg: "Server Error" }] });
+  }
+});
+
+router.get("/project/min/:id", auth, async (req, res) => {
+  if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+  try {
+    const personal = await Personal.findById(req.params.id);
+
+    if (!personal) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Project does not exists" }] });
+    }
+
+    if (req.user.id !== personal.owner.toString()) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Not authorized to view" }] });
+    }
+    console.log(personal);
     res.json(personal);
   } catch (err) {
     console.error(err.message);
@@ -631,6 +865,34 @@ router.put("/togglelist/:id/:cid", auth, async (req, res) => {
   }
 });
 
+router.put("/toggletask/:id/:tid", auth, async (req, res) => {
+  if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+  if (!req.params.tid.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+  try {
+    const task = await Tasks.findById(req.params.id);
+    if (!task) {
+      return res.status(400).json({ error: [{ msg: "Task does not exists" }] });
+    }
+    if (req.user.id !== task.owner.toString()) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Not authorized to post" }] });
+    }
+    const subtask = task.subtasks.find((item) => item.id === req.params.tid);
+    subtask.status = !subtask.status;
+
+    await task.save();
+    return res.status(200).json({ success: [{ msg: "Subtask done" }] });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: [{ msg: "Server Error" }] });
+  }
+});
+
 //DELETE==================================================================================
 router.delete("/deleteProject/:id", auth, async (req, res) => {
   if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
@@ -682,11 +944,20 @@ router.delete("/deleteProject/:id", auth, async (req, res) => {
   }
 });
 
-router.delete("/deletetask/:id", auth, async (req, res) => {
+router.delete("/deletetask/:pid/:id", auth, async (req, res) => {
   if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
     return res.status(400).json({ error: [{ msg: "Page not found" }] });
   }
+  if (!req.params.pid.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
   try {
+    const project = await Personal.findById(req.params.pid);
+    if (!project) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Project does not exists" }] });
+    }
     const task = await Tasks.findById(req.params.id);
     if (!task) {
       return res.status(400).json({ error: [{ msg: "Task does not exists" }] });
@@ -698,6 +969,9 @@ router.delete("/deletetask/:id", auth, async (req, res) => {
     }
     await Schedule.findByIdAndDelete(task.schedule);
     await Tasks.findByIdAndDelete(req.params.id);
+    const tasks = project.task.filter((id) => id.toString() !== req.params.id);
+    project.task = tasks;
+    await project.save();
     res.status(200).json({ success: [{ msg: "Task deleted" }] });
   } catch (err) {
     console.error(err.message);
@@ -705,11 +979,20 @@ router.delete("/deletetask/:id", auth, async (req, res) => {
   }
 });
 
-router.delete("/deleteStickyNotes/:id", auth, async (req, res) => {
+router.delete("/deleteStickyNotes/:pid/:id", auth, async (req, res) => {
   if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
     return res.status(400).json({ error: [{ msg: "Page not found" }] });
   }
+  if (!req.params.pid.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
   try {
+    const project = await Personal.findById(req.params.pid);
+    if (!project) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Project does not exists" }] });
+    }
     const note = await StickyNotes.findById(req.params.id);
     if (!note) {
       return res.status(400).json({ error: [{ msg: "Note does not exists" }] });
@@ -718,10 +1001,15 @@ router.delete("/deleteStickyNotes/:id", auth, async (req, res) => {
     if (req.user.id !== note.owner.toString()) {
       return res
         .status(400)
-        .json({ error: [{ msg: "Not authorized to edit" }] });
+        .json({ error: [{ msg: "Not authorized to delete" }] });
     }
 
     await StickyNotes.findByIdAndDelete(req.params.id);
+    const snotes = project.notes.filter(
+      (id) => id.toString() !== req.params.id
+    );
+    project.notes = snotes;
+    await project.save();
     res.status(200).json({ success: [{ msg: "StickyNotes deleted" }] });
   } catch (err) {
     console.error(err.message);
@@ -729,11 +1017,20 @@ router.delete("/deleteStickyNotes/:id", auth, async (req, res) => {
   }
 });
 
-router.delete("/deleteChecklist/:id", auth, async (req, res) => {
+router.delete("/deleteChecklist/:pid/:id", auth, async (req, res) => {
   if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
     return res.status(400).json({ error: [{ msg: "Page not found" }] });
   }
+  if (!req.params.pid.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
   try {
+    const project = await Personal.findById(req.params.pid);
+    if (!project) {
+      return res
+        .status(400)
+        .json({ error: [{ msg: "Project does not exists" }] });
+    }
     const list = await Checklist.findById(req.params.id);
     if (!list) {
       return res.status(400).json({ error: [{ msg: "List does not exists" }] });
@@ -743,8 +1040,13 @@ router.delete("/deleteChecklist/:id", auth, async (req, res) => {
         .status(400)
         .json({ error: [{ msg: "Not authorized to edit" }] });
     }
+    await Schedule.findByIdAndDelete(list.schedule);
     await Checklist.findByIdAndDelete(req.params.id);
-
+    const clist = project.checklist.filter(
+      (id) => id.toString() !== req.params.id
+    );
+    project.checklist = clist;
+    await project.save();
     res.status(200).json({ success: [{ msg: "Checklist deleted" }] });
   } catch (err) {
     console.error(err.message);

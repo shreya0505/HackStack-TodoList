@@ -5,6 +5,7 @@ import {
   IconButton,
   FormControlLabel,
   Checkbox,
+  Switch,
 } from "@material-ui/core";
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
@@ -47,6 +48,7 @@ const initialItemState = {
 export const CheckListForm = ({
   id,
   type,
+  checkid,
   personal: { loading, checklist },
   error: { errors },
   getChecklist,
@@ -54,12 +56,15 @@ export const CheckListForm = ({
   const [errors_nr, setErrors_nr] = useState([]);
   const [success, setSuccess] = useState([]);
   const [formData, setFormData] = useState(initialState);
-  const {  listName, priority } = formData;
+  const { listName, priority } = formData;
   const [duedate, setDueDate] = useState(new Date());
-  const [cid, setcid] = useState(null);
+  const [cid, setcid] = useState(checkid);
   const [itemForm, setItemData] = useState(initialItemState);
   const { status, listitem } = itemForm;
-
+  const [date, setDate] = useState(false);
+  const handleChange = () => {
+    setDate(!date);
+  };
   const onChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -77,7 +82,7 @@ export const CheckListForm = ({
         "Content-Type": "application/json",
       },
     };
-    
+    if (!date) setDueDate(null);
     const body = JSON.stringify({
       duedate,
       listName,
@@ -108,11 +113,11 @@ export const CheckListForm = ({
         "Content-Type": "application/json",
       },
     };
-  
+
     const body = JSON.stringify({
       listitem,
       status,
-      duedate
+      duedate,
     });
     try {
       let res;
@@ -146,11 +151,7 @@ export const CheckListForm = ({
         }}
       >
         <h4 style={{ letterSpacing: "2px" }}>Add Item</h4>
-        {success.map((success, index) => (
-          <div key={index} class="alert alert-success" role="alert">
-            {success.msg}
-          </div>
-        ))}
+
         {errors.map((error, index) => (
           <div key={index} className="text-danger text-center">
             {error.msg}
@@ -217,16 +218,17 @@ export const CheckListForm = ({
               {" "}
               PREVIEW: {checklist.listName}
             </h3>
-            
-            <div style={{ letterSpacing: "2px", fontFamily: "monospace" }}>
-              <b>Date: {"  "}</b>
-              <Moment
-                format="DD/MM/YY HH:mm"
-                date={checklist.schedule.duedate}
-                className="text-success"
-              />
-             
-            </div>
+
+            {date && (
+              <div style={{ letterSpacing: "2px", fontFamily: "monospace" }}>
+                <b>Date: {"  "}</b>
+                <Moment
+                  format="DD/MM/YY HH:mm"
+                  date={checklist.schedule.duedate}
+                  className="text-success"
+                />
+              </div>
+            )}
             {checklist.listItems.map((item) => (
               <div key={item.id}>
                 <FormControlLabel
@@ -308,15 +310,19 @@ export const CheckListForm = ({
                 fontFamily: "monospace",
               }}
             >
-              <DatePicker
-                selected={duedate}
-                onChange={(date) => setDueDate(date)}
-                showTimeSelect
-                timeFormat="HH:mm"
-                timeIntervals={15}
-                timeCaption="time"
-                dateFormat="MMMM d, yyyy h:mm aa"
-              />
+              <Switch checked={date} onChange={handleChange} />
+              <b>Set Due Date</b>
+              {date && (
+                <DatePicker
+                  selected={duedate}
+                  onChange={(date) => setDueDate(date)}
+                  showTimeSelect
+                  timeFormat="HH:mm"
+                  timeIntervals={15}
+                  timeCaption="time"
+                  dateFormat="MMMM d, yyyy h:mm aa"
+                />
+              )}
             </h5>
           </div>
           <button

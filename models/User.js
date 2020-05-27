@@ -47,6 +47,24 @@ var userSchema = new Schema({
       ref: "team",
     },
   ],
+  task: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "tasks",
+    },
+  ],
+  checklist: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "checkLists",
+    },
+  ],
+  notes: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "stickyNotes",
+    },
+  ],
 
   date: {
     type: Date,

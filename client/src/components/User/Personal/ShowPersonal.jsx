@@ -8,7 +8,7 @@ import { connect } from "react-redux";
 
 import Moment from "react-moment";
 import { Checkbox, FormControlLabel, IconButton } from "@material-ui/core";
-import { Add, Close, ArrowBackIos } from "@material-ui/icons";
+import { Add, Close, ArrowBackIos, Delete, Edit } from "@material-ui/icons";
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
 
@@ -27,12 +27,62 @@ export const ShowPersonal = ({
   const [showtform, setShowtform] = useState(false);
   const [showcform, setShowcform] = useState(false);
   const [shownform, setShownform] = useState(false);
+  const [tid, setTID] = useState(null);
+  const [cid, setCID] = useState(null);
   useEffect(() => {
     async function call_async() {
       await getPersonal(match.params.id);
     }
     call_async();
   }, [match.params.id, getPersonal]);
+
+  const deleteProject = async () => {
+    try {
+      await axios.delete(`/personal/deleteProject/${match.params.id}`);
+      window.location.href = "/dashboard";
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const deleteTask = async (tid) => {
+    try {
+      const res = await axios.delete(
+        `/personal/deletetask/${match.params.id}/${tid}`
+      );
+      setErrors_nr([]);
+      setSuccess_nr(res.data.success_nr);
+      window.location.reload();
+    } catch (error) {
+      setErrors_nr(error.response.data.error);
+    }
+  };
+
+  const deleteCheck = async (cid) => {
+    try {
+      const res = await axios.delete(
+        `/personal/deleteChecklist/${match.params.id}/${cid}`
+      );
+      setErrors_nr([]);
+      setSuccess_nr(res.data.success_nr);
+      window.location.reload();
+    } catch (error) {
+      setErrors_nr(error.response.data.error);
+    }
+  };
+
+  const deleteNote = async (nid) => {
+    try {
+      const res = await axios.delete(
+        `/personal/deleteStickyNotes/${match.params.id}/${nid}`
+      );
+      setErrors_nr([]);
+      setSuccess_nr(res.data.success_nr);
+      window.location.reload();
+    } catch (error) {
+      setErrors_nr(error.response.data.error);
+    }
+  };
 
   const toggleCheck = async (id, cid) => {
     try {
@@ -46,6 +96,16 @@ export const ShowPersonal = ({
     }
   };
 
+  const toggleTask = async (id, tid) => {
+    try {
+      const res = await axios.put(`/personal/toggletask/${id}/${tid}`);
+      setErrors_nr([]);
+      setSuccess_nr(res.data.success_nr);
+      await getPersonal(match.params.id);
+    } catch (error) {
+      setErrors_nr(error.response.data.error);
+    }
+  };
   return loading ? (
     <div className="main-landing">
       <h1> Loading...</h1>
@@ -74,9 +134,48 @@ export const ShowPersonal = ({
                 <ArrowBackIos />
               </Link>{" "}
               {project.title}
-              </h1>
-              
+              <IconButton
+                onClick={() => {
+                  deleteProject();
+                }}
+              >
+                <Delete />
+              </IconButton>
+              <IconButton
+                onClick={() => {
+                  window.location.href = `/editProject/${match.params.id}`;
+                }}
+              >
+                <Edit />
+              </IconButton>
+            </h1>
+
             <p> {project.description}</p>
+            {project.duedate && (
+              <p>
+                {" "}
+                <span class="badge badge-pill badge-danger">
+                  {" "}
+                  <Moment
+                    format=" DD/MM/YY"
+                    date={project.duedate}
+                    style={{
+                      fontFamily: "monospace",
+                    }}
+                  />
+                </span>
+                &nbsp;
+                <span class="badge badge-pill badge-danger">
+                  <Moment
+                    format="  HH:mm"
+                    date={project.duedate}
+                    style={{
+                      fontFamily: "monospace",
+                    }}
+                  />
+                </span>
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -106,7 +205,9 @@ export const ShowPersonal = ({
             </IconButton>
           )}
         </h2>
-        {showtform && <TaskForm id={match.params.id} type="personal" />}
+        {showtform && (
+          <TaskForm id={match.params.id} type="personal" taskid={tid} />
+        )}
         {project.task.map((task) => (
           <div
             key={task.id}
@@ -120,25 +221,72 @@ export const ShowPersonal = ({
               overflow: "hidden",
             }}
           >
-            <h3>{task.taskName} </h3>
-            <p>
-              {" "}
-              {task.schedule.repeat && task.schedule.daily && (
-                <span class="badge badge-secondary">daily</span>
-              )}
-            </p>
+            {" "}
+            <h3>
+              {task.taskName}{" "}
+              <IconButton
+                onClick={() => {
+                  setTID(task._id);
 
+                  setShowtform(true);
+                }}
+                color="primary"
+              >
+                <Add />
+              </IconButton>
+              <IconButton
+                onClick={(e) => {
+                  if (
+                    window.confirm(
+                      "Are you sure to delete this task? Action cannot be undone."
+                    )
+                  )
+                    deleteTask(task._id);
+                }}
+              >
+                <Delete color="secondary" />
+              </IconButton>
+            </h3>
             <p> {task.description}</p>
+            {task.subtasks.map((subtask, i) => (
+              <div key={i}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={subtask.status}
+                      color="primary"
+                      onChange={(e) => toggleTask(task._id, subtask._id)}
+                    />
+                  }
+                  label={
+                    <span>
+                      {subtask.sub} &nbsp;
+                      {subtask.due && (
+                        <Moment
+                          format="DD/MM/YY HH:mm"
+                          date={subtask.due}
+                          className="text-danger"
+                          style={{
+                            fontFamily: "monospace",
+                          }}
+                        />
+                      )}
+                    </span>
+                  }
+                />
+              </div>
+            ))}
+            {task.schedule.duedate && (
+              <div style={{ letterSpacing: "2px", fontFamily: "monospace" }}>
+                <b>Date: {"  "}</b>
 
-            <div style={{ letterSpacing: "2px", fontFamily: "monospace" }}>
-              <b>Date: {"  "}</b>
-
-              <Moment
-                format="DD/MM/YY HH:mm"
-                date={task.schedule.duedate}
-                className="text-danger"
-              />
-            </div>
+                <Moment
+                  format="DD/MM/YY HH:mm"
+                  date={task.schedule.duedate}
+                  className="text-danger"
+                />
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -168,7 +316,9 @@ export const ShowPersonal = ({
             </IconButton>
           )}
         </h2>
-        {showcform && <CheckListForm id={match.params.id} type="personal" />}
+        {showcform && (
+          <CheckListForm id={match.params.id} type="personal" checkid={cid} />
+        )}
         {project.checklist.map((list) => (
           <div
             key={list.id}
@@ -182,17 +332,42 @@ export const ShowPersonal = ({
               overflow: "hidden",
             }}
           >
-            <h3>{list.listName}</h3>
+            <h3>
+              {list.listName}
+              <IconButton
+                onClick={() => {
+                  setCID(list._id);
+                  setShowcform(true);
+                }}
+                color="primary"
+              >
+                <Add />
+              </IconButton>
+              <IconButton
+                onClick={(e) => {
+                  if (
+                    window.confirm(
+                      "Are you sure to delete this checklist? Action cannot be undone."
+                    )
+                  )
+                    deleteCheck(list._id);
+                }}
+              >
+                <Delete color="secondary" />
+              </IconButton>
+            </h3>
 
-            <div style={{ letterSpacing: "2px", fontFamily: "monospace" }}>
-              <b>Date: {"  "}</b>
+            {list.schedule.duedate && (
+              <div style={{ letterSpacing: "2px", fontFamily: "monospace" }}>
+                <b>Date: {"  "}</b>
 
-              <Moment
-                format="DD/MM/YY HH:mm"
-                date={list.schedule.duedate}
-                className="text-danger"
-              />
-            </div>
+                <Moment
+                  format="DD/MM/YY HH:mm"
+                  date={list.schedule.duedate}
+                  className="text-danger"
+                />
+              </div>
+            )}
             {list.listItems.map((item) => (
               <div key={item.id}>
                 <FormControlLabel
@@ -211,7 +386,7 @@ export const ShowPersonal = ({
         ))}
       </div>
       <hr></hr>
-      <div style={{ marginTop: "30px" }}>
+      <div style={{ marginTop: "30px", marginBottom: "30px" }}>
         <h2 style={{ marginLeft: "5%" }}>
           {" "}
           Sticky Notes{" "}
@@ -239,7 +414,7 @@ export const ShowPersonal = ({
         {shownform && <StickyNotesForm id={match.params.id} type="personal" />}
         {project.notes.map((note) => (
           <div
-            key={note.id}
+            key={note._id}
             className="border rounded"
             style={{
               marginLeft: "10%",
@@ -251,11 +426,36 @@ export const ShowPersonal = ({
               background: "#FFFF88",
             }}
           >
-            <h3>{note.title}</h3>
+            <h3>
+              {note.title}{" "}
+              <IconButton
+                onClick={(e) => {
+                  if (
+                    window.confirm(
+                      "Are you sure to delete this note? Action cannot be undone."
+                    )
+                  )
+                    deleteNote(note._id);
+                }}
+              >
+                <Delete color="secondary" />
+              </IconButton>
+            </h3>
             <p>{note.message}</p>
           </div>
         ))}
       </div>
+      <p
+        className="text-muted"
+        style={{
+          fontFamily: "monospace",
+          letterSpacing: "2px",
+          textAlign: "center",
+        }}
+      >
+        Date Created :{" "}
+        <Moment format="DD/MM/YY HH:mm" date={project.dateCreated} />
+      </p>
     </div>
   );
 };

@@ -65,12 +65,8 @@ var teamSchema = new Schema({
   chat: [
     {
       sender: {
-        type: [Schema.Types.ObjectId],
-        ref: "users",
-      },
-      tag: {
-        type: [Schema.Types.ObjectId],
-        ref: "users",
+        type: String,
+        required: true,
       },
       text: {
         type: String,

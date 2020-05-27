@@ -1,4 +1,8 @@
-import { GET_PERSONAL, GET_CHECKLIST } from "../actions/types";
+import {
+  GET_PERSONAL,
+  GET_CHECKLIST,
+  GET_MIN_PERSONAL,
+} from "../actions/types";
 
 const initialState = {
   personal: null,
@@ -11,6 +15,12 @@ export default function (state = initialState, action) {
 
   switch (type) {
     case GET_PERSONAL:
+      return {
+        ...state,
+        loading: false,
+        project: payload,
+      };
+    case GET_MIN_PERSONAL:
       return {
         ...state,
         loading: false,

@@ -36,6 +36,21 @@ var taskSchema = new Schema({
     default: Date.now(),
   },
 
+  subtasks: [
+    {
+      sub: {
+        type: String,
+        required: true,
+      },
+      status: {
+        type: Boolean,
+        default: false,
+      },
+      due: {
+        type: Date,
+      },
+    },
+  ],
 });
 
 module.exports = Tasks = mongoose.model("tasks", taskSchema);
