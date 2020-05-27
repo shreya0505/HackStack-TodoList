@@ -34,7 +34,6 @@ router.post(
       title,
       duedate,
       teamName,
-
       teamJoinCode,
       status,
       label,
@@ -63,7 +62,7 @@ router.post(
         label,
         purpose,
       });
-
+      console.log(req.body);
       const team = await newTeam.save();
       user.team.unshift(team.id);
       await user.save();
@@ -133,7 +132,7 @@ router.post(
       };
       team.activityLog.unshift(newActivityLog);
       await team.save();
-      res.status(200).json({ success: [{ msg: "Task Added" }] });
+      res.status(200).json({ success: [{ msg: "Task Added" }], id: task.id });
     } catch (err) {
       console.error(err.message);
       res.status(500).json({ error: [{ msg: "Server Error" }] });
@@ -316,6 +315,46 @@ router.post(
     }
   }
 );
+router.post(
+  "/addsubtask/:id",
+  [check("sub", "Subtask can't be blank").notEmpty()],
+  auth,
+  async (req, res) => {
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+      return res.status(400).json({ error: error.array() });
+    }
+    const { sub, status, due } = req.body;
+
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ error: [{ msg: "Page not found" }] });
+    }
+    try {
+      const task = await Tasks.findById(req.params.id);
+      if (!task) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Task does not exists" }] });
+      }
+      if (req.user.id !== task.owner.toString()) {
+        return res
+          .status(400)
+          .json({ error: [{ msg: "Not authorized to post" }] });
+      }
+      const newItem = {
+        sub,
+        status,
+        due,
+      };
+      task.subtasks.unshift(newItem);
+      await task.save();
+      return res.status(200).json({ success: [{ msg: "Subtask added" }] });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).json({ error: [{ msg: "Server Error" }] });
+    }
+  }
+);
 
 router.put("/togglelist/:id/:cid", auth, async (req, res) => {
   if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
@@ -336,6 +375,31 @@ router.put("/togglelist/:id/:cid", auth, async (req, res) => {
     item.status = !item.status;
     list.save();
     res.status(200).json({ success: [{ msg: "Successful pin action" }] });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: [{ msg: "Server Error" }] });
+  }
+});
+
+router.put("/toggletask/:id/:tid", auth, async (req, res) => {
+  if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+  if (!req.params.tid.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ error: [{ msg: "Page not found" }] });
+  }
+  try {
+    const task = await Tasks.findById(req.params.id);
+    if (!task) {
+      return res.status(400).json({ error: [{ msg: "List does not exists" }] });
+    }
+
+    // Handle Auth to Edit
+
+    const item = task.subtasks.find((item) => item.id === req.params.tid);
+    item.status = !item.status;
+    task.save();
+    res.status(200).json({ success: [{ msg: "Completed" }] });
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: [{ msg: "Server Error" }] });
@@ -706,7 +770,6 @@ router.get("/checklist/:id/:pid", auth, async (req, res) => {
   }
 });
 
-
 router.get("/chat/:id", auth, async (req, res) => {
   if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
     return res.status(400).json({ error: [{ msg: "Page not found" }] });
@@ -733,6 +796,7 @@ router.get("/chat/:id", auth, async (req, res) => {
         .json({ error: [{ msg: "Not authorizied to chat" }] });
     }
     res.json(team.chat);
+    f;
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: [{ msg: "Server Error" }] });
@@ -1082,14 +1146,24 @@ router.delete("/deleteProject/:id", auth, async (req, res) => {
         .json({ error: [{ msg: "Not authorized to delete" }] });
     }
 
-    task = team.task;
+    let task = team.task;
     for (let i = 0; i < task.length; i++) {
       const currentTask = await Tasks.findById(task[i]);
       await Schedule.findByIdAndDelete(currentTask.schedule);
       await Tasks.findByIdAndDelete(task[i]);
     }
 
-    checklist = team.checklist;
+    let teamMembers = team.teamMembers;
+    for (let i = 0; i < teamMembers.length; i++) {
+      const currentMember = await User.findById(teamMembers[i]);
+      const team = currentMember.team.filter(
+        (id) => id.toString() !== req.params.id
+      );
+      currentMember.team = team;
+      currentMember.save();
+    }
+
+    let checklist = team.checklist;
     for (let i = 0; i < checklist.length; i++) {
       await Checklist.findByIdAndDelete(checklist[i]);
     }
@@ -1098,20 +1172,7 @@ router.delete("/deleteProject/:id", auth, async (req, res) => {
     for (let i = 0; i < notes.length; i++) {
       await StickyNotes.findByIdAndDelete(notes[i]);
     }
-    let found = 0;
-    for (let i = 0; i < team.teamMembers.length; i++) {
-      let str = team.teamMembers[i].id.toString();
 
-      if (str === req.user.id) {
-        found = 1;
-        break;
-      }
-    }
-    if (!found) {
-      return res
-        .status(400)
-        .json({ error: [{ msg: "Not authorizied to view" }] });
-    }
     await Team.findByIdAndDelete(req.params.id);
 
     res.status(200).json({ success: [{ msg: "Project deleted" }] });

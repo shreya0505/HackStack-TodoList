@@ -7,7 +7,12 @@ import { Link } from "react-router-dom";
 import { connect } from "react-redux";
 
 import Moment from "react-moment";
-import { Checkbox, FormControlLabel, IconButton } from "@material-ui/core";
+import {
+  Checkbox,
+  FormControlLabel,
+  IconButton,
+  Button,
+} from "@material-ui/core";
 import {
   Add,
   Close,
@@ -17,6 +22,7 @@ import {
   GroupAdd,
   ContactsOutlined,
   LibraryBooksOutlined,
+  Delete,
 } from "@material-ui/icons";
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
@@ -37,7 +43,8 @@ const ShowTeam = ({
   const [showtform, setShowtform] = useState(false);
   const [showcform, setShowcform] = useState(false);
   const [shownform, setShownform] = useState(false);
-
+  const [tid, setTID] = useState(null);
+  const [cid, setCID] = useState(null);
   useEffect(() => {
     async function call_async() {
       await getTeam(match.params.id);
@@ -48,6 +55,65 @@ const ShowTeam = ({
   const toggleCheck = async (id, cid) => {
     try {
       const res = await axios.put(`/team/togglelist/${id}/${cid}`);
+      setErrors_nr([]);
+      setSuccess_nr(res.data.success_nr);
+      await getTeam(match.params.id);
+    } catch (error) {
+      setErrors_nr(error.response.data.error);
+    }
+  };
+
+  const deleteProject = async () => {
+    try {
+      await axios.delete(`/team/deleteProject/${match.params.id}`);
+      window.location.href = "/dashboard";
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const deleteTask = async (tid) => {
+    try {
+      const res = await axios.delete(
+        `/team/deletetask/${tid}/${match.params.id}`
+      );
+      setErrors_nr([]);
+      setSuccess_nr(res.data.success_nr);
+      window.location.reload();
+    } catch (error) {
+      setErrors_nr(error.response.data.error);
+    }
+  };
+
+  const deleteCheck = async (cid) => {
+    try {
+      const res = await axios.delete(
+        `/team/deleteChecklist/${cid}/${match.params.id}`
+      );
+      setErrors_nr([]);
+      setSuccess_nr(res.data.success_nr);
+      window.location.reload();
+    } catch (error) {
+      setErrors_nr(error.response.data.error);
+    }
+  };
+
+  const deleteNote = async (nid) => {
+    try {
+      const res = await axios.delete(
+        `/team/deleteStickyNotes/${nid}/${match.params.id}`
+      );
+      setErrors_nr([]);
+      setSuccess_nr(res.data.success_nr);
+      window.location.reload();
+    } catch (error) {
+      setErrors_nr(error.response.data.error);
+    }
+  };
+
+  const toggleTask = async (id, tid) => {
+    try {
+      const res = await axios.put(`/team/toggletask/${id}/${tid}`);
       setErrors_nr([]);
       setSuccess_nr(res.data.success_nr);
       await getTeam(match.params.id);
@@ -84,13 +150,51 @@ const ShowTeam = ({
                 <ArrowBackIos />
               </Link>
               {project.title}
+              <IconButton
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      "Are you sure to delete this project? Action cannot be undone."
+                    )
+                  )
+                    deleteProject();
+                }}
+              >
+                <Delete />
+              </IconButton>
             </h1>
             <p>{project.purpose}</p>
-            <p>
+            {project.duedate && (
+              <p>
+                {" "}
+                <span class="badge badge-pill badge-danger">
+                  {" "}
+                  <Moment
+                    format=" DD/MM/YY"
+                    date={project.duedate}
+                    style={{
+                      fontFamily: "monospace",
+                    }}
+                  />
+                </span>
+                &nbsp;
+                <span class="badge badge-pill badge-danger">
+                  <Moment
+                    format="  HH:mm"
+                    date={project.duedate}
+                    style={{
+                      fontFamily: "monospace",
+                    }}
+                  />
+                </span>
+              </p>
+            )}
+            <p className="border rounded" style={{ padding: "10px 10px" }}>
               {" "}
-              {project.teamMembers.map((member) => (
+              <b>Members</b>
+              {project.teamMembers.map((member, i) => (
                 <div key={member._id} className="text-muted text-center">
-                  {member.username}&nbsp;
+                  {i + 1}. &nbsp;{member.username}&nbsp;
                 </div>
               ))}
             </p>
@@ -109,7 +213,9 @@ const ShowTeam = ({
 
                 {user._id === project.manager._id && (
                   <button
-                    onClick={() => (window.location.href = `/invite/${match.params.id}`)}
+                    onClick={() =>
+                      (window.location.href = `/invite/${match.params.id}`)
+                    }
                     class="btn btn-light btn-lg"
                     style={{
                       letterSpacing: "2px",
@@ -237,10 +343,12 @@ const ShowTeam = ({
             </IconButton>
           )}
         </h2>
-        {showtform && <TaskForm id={match.params.id} type="team" />}
+        {showtform && (
+          <TaskForm id={match.params.id} type="team" taskid={tid} />
+        )}
         {project.task.map((task) => (
           <div
-            key={task.id}
+            key={task._id}
             className="border rounded"
             style={{
               marginLeft: "10%",
@@ -251,19 +359,72 @@ const ShowTeam = ({
               overflow: "hidden",
             }}
           >
-            <h3>{task.taskName} </h3>
-            <p> </p>
+            <h3>
+              {task.taskName}{" "}
+              <IconButton
+                onClick={() => {
+                  setTID(task._id);
+
+                  setShowtform(true);
+                }}
+                color="primary"
+              >
+                <Add />
+              </IconButton>
+              <IconButton
+                onClick={(e) => {
+                  if (
+                    window.confirm(
+                      "Are you sure to delete this task? Action cannot be undone."
+                    )
+                  )
+                    deleteTask(task._id);
+                }}
+              >
+                <Delete color="secondary" />
+              </IconButton>{" "}
+            </h3>
 
             <p> {task.description}</p>
+            {task.subtasks.map((subtask, i) => (
+              <div key={i}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={subtask.status}
+                      color="primary"
+                      onChange={(e) => toggleTask(task._id, subtask._id)}
+                    />
+                  }
+                  label={
+                    <span>
+                      {subtask.sub} &nbsp;
+                      {subtask.due && (
+                        <Moment
+                          format="DD/MM/YY HH:mm"
+                          date={subtask.due}
+                          className="text-danger"
+                          style={{
+                            fontFamily: "monospace",
+                          }}
+                        />
+                      )}
+                    </span>
+                  }
+                />
+              </div>
+            ))}
+            {task.schedule.duedate && (
+              <div style={{ letterSpacing: "2px", fontFamily: "monospace" }}>
+                <b>Date: {"  "}</b>
 
-            <div style={{ letterSpacing: "2px", fontFamily: "monospace" }}>
-              <b>Date: {"  "}</b>
-              <Moment
-                format="DD/MM/YY HH:mm"
-                date={task.schedule.duedate}
-                className="text-success"
-              />
-            </div>
+                <Moment
+                  format="DD/MM/YY HH:mm"
+                  date={task.schedule.duedate}
+                  className="text-danger"
+                />
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -293,7 +454,9 @@ const ShowTeam = ({
             </IconButton>
           )}
         </h2>
-        {showcform && <CheckListForm id={match.params.id} type="team" />}
+        {showcform && (
+          <CheckListForm id={match.params.id} type="team" checkid={cid} />
+        )}
         {project.checklist.map((list) => (
           <div
             key={list.id}
@@ -307,7 +470,30 @@ const ShowTeam = ({
               overflow: "hidden",
             }}
           >
-            <h3>{list.listName}</h3>
+            <h3>
+              {list.listName}{" "}
+              <IconButton
+                onClick={() => {
+                  setCID(list._id);
+                  setShowcform(true);
+                }}
+                color="primary"
+              >
+                <Add />
+              </IconButton>
+              <IconButton
+                onClick={(e) => {
+                  if (
+                    window.confirm(
+                      "Are you sure to delete this checklist? Action cannot be undone."
+                    )
+                  )
+                    deleteCheck(list._id);
+                }}
+              >
+                <Delete color="secondary" />
+              </IconButton>
+            </h3>
 
             <div style={{ letterSpacing: "2px", fontFamily: "monospace" }}>
               <b>Date: {"  "}</b>
@@ -375,7 +561,21 @@ const ShowTeam = ({
               background: "#FFFF88",
             }}
           >
-            <h3>{note.title}</h3>
+            <h3>
+              {note.title}
+              <IconButton
+                onClick={(e) => {
+                  if (
+                    window.confirm(
+                      "Are you sure to delete this note? Action cannot be undone."
+                    )
+                  )
+                    deleteTask(note._id);
+                }}
+              >
+                <Delete color="secondary" />
+              </IconButton>
+            </h3>
             <p>{note.message}</p>
           </div>
         ))}

@@ -105,6 +105,7 @@ var teamSchema = new Schema({
 
   duedate: {
     type: Date,
+    default: null,
   },
 
   dateCreated: {

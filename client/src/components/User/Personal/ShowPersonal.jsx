@@ -8,9 +8,7 @@ import { connect } from "react-redux";
 
 import Moment from "react-moment";
 import { Checkbox, FormControlLabel, IconButton } from "@material-ui/core";
-import { Add, Close, ArrowBackIos, Delete, Edit } from "@material-ui/icons";
-import "react-datepicker/dist/react-datepicker.css";
-import DatePicker from "react-datepicker";
+import { Add, Close, ArrowBackIos, Delete } from "@material-ui/icons";
 
 import TaskForm from "../Forms/TaskForm";
 import StickyNotesForm from "../Forms/StickyNotesForm";
@@ -141,13 +139,6 @@ export const ShowPersonal = ({
               >
                 <Delete />
               </IconButton>
-              <IconButton
-                onClick={() => {
-                  window.location.href = `/editProject/${match.params.id}`;
-                }}
-              >
-                <Edit />
-              </IconButton>
             </h1>
 
             <p> {project.description}</p>
@@ -210,7 +201,7 @@ export const ShowPersonal = ({
         )}
         {project.task.map((task) => (
           <div
-            key={task.id}
+            key={task._id}
             className="border rounded"
             style={{
               marginLeft: "10%",

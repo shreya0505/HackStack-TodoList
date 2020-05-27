@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { TextField, TextareaAutosize } from "@material-ui/core";
+import { TextField, TextareaAutosize, Switch } from "@material-ui/core";
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
 import axios from "axios";
@@ -14,6 +14,10 @@ export const AddTeam = () => {
   });
 
   const [duedate, setDueDate] = useState(null);
+  const [date, setDate] = useState(false);
+  const handleChange = () => {
+    setDate(!date);
+  };
   const { title, purpose, label, teamJoinCode, teamName } = formData;
 
   const [errors, setErrors] = useState([]);
@@ -29,14 +33,16 @@ export const AddTeam = () => {
         "Content-Type": "application/json",
       },
     };
-
+    if (!date) setDueDate(null);
     const body = JSON.stringify({
       title,
       purpose,
       label,
       teamJoinCode,
       teamName,
+      duedate,
     });
+    console.log(body);
     try {
       const res = await axios.post(`team/`, body, config);
       setErrors([]);
@@ -154,28 +160,31 @@ export const AddTeam = () => {
                 onChange={(e) => onChange(e)}
                 style={{ margin: "10px 5px" }}
               />
-
-              <div style={{ margin: "40px 5px" }}>
-                <h5 style={{ textAlign: "left", letterSpacing: "2px" }}>
-                  Due Date
-                </h5>
-                <h5
-                  style={{
-                    textAlign: "left",
-                    fontFamily: "monospace",
-                  }}
-                >
-                  <DatePicker
-                    selected={duedate}
-                    onChange={(date) => setDueDate(date)}
-                    showTimeSelect
-                    timeFormat="HH:mm"
-                    timeIntervals={15}
-                    timeCaption="time"
-                    dateFormat="MMMM d, yyyy h:mm aa"
-                  />
-                </h5>
-              </div>
+              <Switch checked={date} onChange={handleChange} />
+              <b>Set Due Date</b>
+              {date && (
+                <div style={{ margin: "40px 5px" }}>
+                  <h5 style={{ textAlign: "left", letterSpacing: "2px" }}>
+                    Due Date
+                  </h5>
+                  <h5
+                    style={{
+                      textAlign: "left",
+                      fontFamily: "monospace",
+                    }}
+                  >
+                    <DatePicker
+                      selected={duedate}
+                      onChange={(date) => setDueDate(date)}
+                      showTimeSelect
+                      timeFormat="HH:mm"
+                      timeIntervals={15}
+                      timeCaption="time"
+                      dateFormat="MMMM d, yyyy h:mm aa"
+                    />
+                  </h5>
+                </div>
+              )}
 
               <button
                 class="btn btn-light btn-lg"
